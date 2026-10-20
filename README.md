@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # OmniCare AI 🏥
 
 ### AI-Powered Unified Patient Medical Record Intelligence Platform
@@ -63,3 +64,7 @@ Under active development.
 ## 👨‍💻 Developer
 
 Developed as an AI-powered healthcare technology project.
+=======
+# omnicare-ai-Copy
+AI-powered unified healthcare platform for organizing patient medical records, extracting clinical information using Google Gemini, and generating a chronological health timeline. Copy
+>>>>>>> 96059da5a27f5afe0b4e84335a5e1cf20283deee

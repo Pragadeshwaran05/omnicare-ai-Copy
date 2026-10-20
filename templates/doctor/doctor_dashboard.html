@@ -1,0 +1,388 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}
+Doctor Dashboard - OmniCare AI
+{% endblock %}
+
+{% block extra_css %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_sidebar.css') }}">
+      <link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="doctor-dashboard">
+
+    <!-- =========================
+         HEADER
+         ========================= -->
+
+    <div class="dashboard-header">
+
+        <div>
+           
+
+            <h1>
+                Welcome, Dr. {{ doctor.full_name }}
+            </h1>
+
+            <p>
+                Manage authorized patient records and understand
+                complete medical histories with OmniCare AI.
+            </p>
+        </div>
+
+        <div class="doctor-profile-card">
+
+            <div class="doctor-avatar">
+                👨‍⚕️
+            </div>
+
+            <div>
+                <strong>Dr. {{ doctor.full_name }}</strong>
+
+                <span>
+                    {{ doctor.specialization }}
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         QUICK STATS
+         ========================= -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+
+            <div class="stat-icon patients">
+                👥
+            </div>
+
+            <div>
+                <span class="stat-title">
+                    Authorized Patients
+                </span>
+
+                <strong class="stat-value">
+                    0
+                </strong>
+
+                <small>
+                    Patients currently accessible
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon records">
+                📋
+            </div>
+
+            <div>
+                <span class="stat-title">
+                    Medical Records
+                </span>
+
+                <strong class="stat-value">
+                    0
+                </strong>
+
+                <small>
+                    Records available to you
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon history">
+                🩺
+            </div>
+
+            <div>
+                <span class="stat-title">
+                    Patient Histories
+                </span>
+
+                <strong class="stat-value">
+                    0
+                </strong>
+
+                <small>
+                    AI-organized histories
+                </small>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon access">
+                🔐
+            </div>
+
+            <div>
+                <span class="stat-title">
+                    Active Access
+                </span>
+
+                <strong class="stat-value">
+                    0
+                </strong>
+
+                <small>
+                    Currently authorized
+                </small>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         MAIN ACTIONS
+         ========================= -->
+
+    <div class="dashboard-section">
+
+        <div class="section-heading">
+
+            <div>
+                <h2>Doctor Workspace</h2>
+
+                <p>
+                    Access patient information and use AI to
+                    understand their medical history.
+                </p>
+            </div>
+
+        </div>
+
+
+        <div class="workspace-grid">
+
+
+            <!-- SEARCH PATIENT -->
+
+            <a href="{{ url_for('doctor_access') }}"
+               class="workspace-card">
+
+                <div class="workspace-icon">
+                    🔍
+                </div>
+
+                <div class="workspace-content">
+
+                    <h3>
+                        Find Patient
+                    </h3>
+
+                    <p>
+                        Search for a patient using their
+                        Health ID or authorized identifier.
+                    </p>
+
+                    <span class="workspace-link">
+                        Search Patient →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- SCAN QR -->
+
+            <a href="{{ url_for('doctor_guest_patient') }}"
+               class="workspace-card">
+
+                <div class="workspace-icon">
+                    📱
+                </div>
+
+                <div class="workspace-content">
+
+                    <h3>
+                        Scan Patient QR
+                    </h3>
+
+                    <p>
+                        Scan the patient's QR or Health ID
+                        to request authorized access.
+                    </p>
+
+                    <span class="workspace-link">
+                        Scan QR →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- PATIENT HISTORY -->
+
+            <a href="{{ url_for('doctor_ai_assistant') }}"
+               class="workspace-card">
+
+                <div class="workspace-icon">
+                    🧠
+                </div>
+
+                <div class="workspace-content">
+
+                    <h3>
+                        Patient History
+                    </h3>
+
+                    <p>
+                        View an AI-organized chronology of
+                        diagnoses, medications, investigations
+                        and follow-ups.
+                    </p>
+
+                    <span class="workspace-link">
+                        View History →
+                    </span>
+
+                </div>
+
+            </a>
+
+
+            <!-- UPLOAD RECORD -->
+
+            <a href="{{ url_for('doctor_medical_records') }}"
+               class="workspace-card">
+
+                <div class="workspace-icon">
+                    📤
+                </div>
+
+                <div class="workspace-content">
+
+                    <h3>
+                        Upload Medical Record
+                    </h3>
+
+                    <p>
+                        Add a medical record to the correct
+                        patient's authorized record collection.
+                    </p>
+
+                    <span class="workspace-link">
+                        Upload Record →
+                    </span>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         AI ASSISTANT
+         ========================= -->
+
+    <div class="ai-card">
+
+        <div class="ai-icon">
+            🤖
+        </div>
+
+        <div class="ai-content">
+
+            <span class="ai-label">
+                OMNICARE AI
+            </span>
+
+            <h2>
+                Unified Health-Record Intelligence
+            </h2>
+
+            <p>
+                Once authorized records are available,
+                OmniCare AI organizes diagnoses, medications,
+                investigations and follow-ups into a clear
+                chronological medical history.
+            </p>
+
+        </div>
+
+        <a href="{{ url_for('doctor_ai_assistant') }}"
+           class="ai-button">
+            Open AI Assistant →
+        </a>
+
+    </div>
+
+
+    <!-- =========================
+         RECENT PATIENTS
+         ========================= -->
+
+    <div class="recent-section">
+
+        <div class="section-heading">
+
+            <div>
+                <h2>Recent Patients</h2>
+
+                <p>
+                    Patients whose records you recently accessed.
+                </p>
+            </div>
+
+            <a href="{{ url_for('doctor_access') }}"
+               class="view-all">
+                View All →
+            </a>
+
+        </div>
+
+
+        <div class="empty-patients">
+
+            <div class="empty-icon">
+                👥
+            </div>
+
+            <h3>
+                No patients yet
+            </h3>
+
+            <p>
+                Search for a patient or scan their QR / Health ID
+                to begin an authorized session.
+            </p>
+
+            <a href="{{ url_for('doctor_access') }}"
+               class="primary-button">
+                Find Patient
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

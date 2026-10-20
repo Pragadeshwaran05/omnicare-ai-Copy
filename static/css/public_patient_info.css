@@ -1,0 +1,263 @@
+/* =========================================================
+   OMNICARE AI - PUBLIC PATIENT INFORMATION (QR SCAN PAGE)
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background-color: #f5f4f9;
+    color: #1f2937;
+    line-height: 1.5;
+    padding: 30px 16px;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.patient-info-wrapper {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.patient-info-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(36, 16, 95, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eae7f2;
+    padding: 36px 40px;
+    text-align: center;
+}
+
+/* ---------------------------------------------------------
+   HEADER
+   --------------------------------------------------------- */
+.card-header {
+    margin-bottom: 20px;
+}
+
+.brand-logo {
+    font-size: 28px;
+    font-weight: 800;
+    color: #24105f;
+    letter-spacing: -0.5px;
+}
+
+.brand-icon {
+    color: #7c3aed;
+    margin-right: 6px;
+}
+
+.brand-logo span {
+    color: #7c3aed;
+}
+
+.brand-tagline {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* ---------------------------------------------------------
+   STATUS BADGE
+   --------------------------------------------------------- */
+.status-badge-container {
+    margin: 18px 0 24px;
+    display: flex;
+    justify-content: center;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.1);
+}
+
+.check-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    background-color: #10b981;
+    color: #ffffff;
+    border-radius: 50%;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* ---------------------------------------------------------
+   PATIENT IDENTITY
+   --------------------------------------------------------- */
+.patient-identity-section {
+    margin-bottom: 24px;
+}
+
+.patient-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: #1f104d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.health-id-badge {
+    display: inline-block;
+    background-color: #f3effe;
+    color: #4c1d95;
+    border: 1px solid #ddd6fe;
+    padding: 6px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.health-id-badge strong {
+    font-weight: 700;
+    color: #24105f;
+    letter-spacing: 0.5px;
+}
+
+/* ---------------------------------------------------------
+   DIVIDER
+   --------------------------------------------------------- */
+.section-divider {
+    border: none;
+    height: 1px;
+    background-color: #edeaf4;
+    margin: 24px 0;
+}
+
+/* ---------------------------------------------------------
+   INFO SECTIONS & GRIDS
+   --------------------------------------------------------- */
+.info-section {
+    text-align: left;
+    margin: 20px 0;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6b21a8;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 32px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-label {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+
+.info-value {
+    font-size: 15px;
+    color: #111827;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+/* ---------------------------------------------------------
+   PROTECTED CARD
+   --------------------------------------------------------- */
+.protected-card {
+    background-color: #faf8ff;
+    border: 1.5px dashed #c4b5fd;
+    border-radius: 14px;
+    padding: 24px 20px;
+    margin: 24px 0;
+    text-align: center;
+}
+
+.lock-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.protected-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4c1d95;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.protected-text {
+    font-size: 14px;
+    color: #5b21b6;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.5;
+}
+
+/* ---------------------------------------------------------
+   FOOTER
+   --------------------------------------------------------- */
+.card-footer {
+    font-size: 13px;
+    color: #6b7280;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    margin-top: 16px;
+}
+
+/* ---------------------------------------------------------
+   RESPONSIVE DESIGN (MOBILE)
+   --------------------------------------------------------- */
+@media (max-width: 640px) {
+    body {
+        padding: 16px 10px;
+    }
+
+    .patient-info-card {
+        padding: 24px 18px;
+        border-radius: 16px;
+    }
+
+    .patient-name {
+        font-size: 22px;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .brand-logo {
+        font-size: 24px;
+    }
+}

@@ -1,0 +1,505 @@
+{% extends "patient_base.html" %}
+
+{% block title %}
+Health Records - OmniCare AI
+{% endblock %}
+
+{% block content %}
+
+<div class="health-records-page">
+
+    <!-- =========================================
+         PAGE HEADER
+         ========================================= -->
+
+    <div class="records-header">
+
+        <div class="records-heading">
+
+            <span class="page-label">
+                HEALTH RECORDS
+            </span>
+
+            <h1>
+                All Health Records
+            </h1>
+
+            <p>
+                Your uploaded and authorized medical documents.
+            </p>
+
+        </div>
+
+        <a
+            href="{{ url_for('patient_upload_records') }}"
+            class="upload-record-btn"
+        >
+            <span>📤</span>
+            Upload Record
+        </a>
+
+    </div>
+
+
+    <!-- =========================================
+         STATISTICS
+         ========================================= -->
+
+    <div class="records-stats">
+
+        <!-- Total Records -->
+
+        <div class="record-stat-card">
+
+            <div class="record-stat-icon records-icon">
+                📋
+            </div>
+
+            <div class="record-stat-content">
+
+                <span>
+                    Total Records
+                </span>
+
+                <strong>
+                    {{ records|length }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Diagnoses -->
+
+        <div class="record-stat-card">
+
+            <div class="record-stat-icon diagnosis-icon">
+                🩺
+            </div>
+
+            <div class="record-stat-content">
+
+                <span>
+                    Diagnoses
+                </span>
+
+                <strong>
+                    {{ diagnoses_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Prescriptions -->
+
+        <div class="record-stat-card">
+
+            <div class="record-stat-icon medicine-icon">
+                💊
+            </div>
+
+            <div class="record-stat-content">
+
+                <span>
+                    Prescriptions
+                </span>
+
+                <strong>
+                    {{ prescriptions_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- Medical Reports -->
+
+        <div class="record-stat-card">
+
+            <div class="record-stat-icon report-icon">
+                🧪
+            </div>
+
+            <div class="record-stat-content">
+
+                <span>
+                    Medical Reports
+                </span>
+
+                <strong>
+                    {{ reports_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         HEALTH RECORDS CARD
+         ========================================= -->
+
+    <div class="records-card">
+
+        <!-- Card Header -->
+
+        <div class="records-card-header">
+
+            <div>
+
+                <h2>
+                    Health Records
+                </h2>
+
+                <p>
+                    All your uploaded medical documents
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             SEARCH + FILTER
+             ===================================== -->
+
+        <div class="records-controls">
+
+            <div class="record-search">
+
+                <span class="search-icon">
+                    🔍
+                </span>
+
+                <input
+                    type="text"
+                    id="recordSearch"
+                    placeholder="Search records..."
+                    autocomplete="off"
+                >
+
+            </div>
+
+
+            <select
+                id="recordFilter"
+                class="record-filter"
+            >
+
+                <option value="all">
+                    All Records
+                </option>
+
+                <option value="medical">
+                    Medical Reports
+                </option>
+
+                <option value="prescription">
+                    Prescriptions
+                </option>
+
+                <option value="lab">
+                    Lab Reports
+                </option>
+
+                <option value="scan">
+                    Scan Reports
+                </option>
+
+                <option value="other">
+                    Other
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- =====================================
+             RECORD LIST
+             ===================================== -->
+
+        {% if records %}
+
+        <div
+            class="records-list"
+            id="recordsList"
+        >
+
+            {% for record in records %}
+
+            <div
+                class="health-record-item"
+                data-title="{{ record.title|default('')|lower }}"
+                data-type="{{ record.record_type|default('other')|lower }}"
+            >
+
+                <!-- Record Icon -->
+
+                <div class="health-record-icon">
+                    📄
+                </div>
+
+
+                <!-- Record Information -->
+
+                <div class="health-record-info">
+
+                    <h3>
+                        {{ record.title|default('Medical Record') }}
+                    </h3>
+
+                    <div class="record-type">
+
+                        {{ record.record_type|default('Medical Document') }}
+
+                    </div>
+
+                    <div class="record-date">
+
+                        Uploaded on
+
+                        {{ record.created_at|default('Recently') }}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Action -->
+
+                <div class="health-record-action">
+
+                    {% if record.file_url %}
+
+                    <a
+                        href="{{ record.file_url }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="view-record-btn"
+                    >
+                        View Record
+                    </a>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- No Search Result -->
+
+        <div
+            id="noSearchResults"
+            class="no-search-results"
+            style="display: none;"
+        >
+
+            <div>
+                🔍
+            </div>
+
+            <h3>
+                No matching records
+            </h3>
+
+            <p>
+                Try a different search term or filter.
+            </p>
+
+        </div>
+
+
+        {% else %}
+
+        <!-- =====================================
+             EMPTY STATE
+             ===================================== -->
+
+        <div class="empty-records">
+
+            <div class="empty-record-icon">
+                📋
+            </div>
+
+            <h3>
+                No Health Records Yet
+            </h3>
+
+            <p>
+                Your uploaded medical records will appear here.
+                Start building your unified health history by
+                uploading your first record.
+            </p>
+
+            <a
+                href="{{ url_for('patient_upload_records') }}"
+                class="empty-upload-btn"
+            >
+                <span>📤</span>
+                Upload Your First Record
+            </a>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+
+    <!-- =========================================
+         SECURITY CARD
+         ========================================= -->
+
+    <div class="security-card">
+
+        <div class="security-icon">
+            🔐
+        </div>
+
+        <div class="security-content">
+
+            <h3>
+                Your Health Records Are Secure
+            </h3>
+
+            <p>
+                Your medical records are linked to your patient account
+                and can only be accessed by authorized users.
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     SEARCH SCRIPT
+     ========================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput =
+        document.getElementById("recordSearch");
+
+    const filter =
+        document.getElementById("recordFilter");
+
+    const records =
+        document.querySelectorAll(".health-record-item");
+
+    const noResults =
+        document.getElementById("noSearchResults");
+
+
+    function filterRecords() {
+
+        const searchValue =
+            searchInput.value.toLowerCase().trim();
+
+        const filterValue =
+            filter.value.toLowerCase();
+
+        let visibleCount = 0;
+
+
+        records.forEach(function (record) {
+
+            const title =
+                record.dataset.title || "";
+
+            const type =
+                record.dataset.type || "";
+
+
+            const matchesSearch =
+                title.includes(searchValue) ||
+                type.includes(searchValue);
+
+
+            let matchesFilter = true;
+
+
+            if (filterValue !== "all") {
+
+                matchesFilter =
+                    type.includes(filterValue);
+
+            }
+
+
+            if (
+                matchesSearch &&
+                matchesFilter
+            ) {
+
+                record.style.display = "flex";
+
+                visibleCount++;
+
+            } else {
+
+                record.style.display = "none";
+
+            }
+
+        });
+
+
+        if (noResults) {
+
+            if (visibleCount === 0 && records.length > 0) {
+
+                noResults.style.display = "block";
+
+            } else {
+
+                noResults.style.display = "none";
+
+            }
+
+        }
+
+    }
+
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            filterRecords
+        );
+
+    }
+
+
+    if (filter) {
+
+        filter.addEventListener(
+            "change",
+            filterRecords
+        );
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends "doctor_base.html" %}
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_patient_access.css') }}">
+
+
+
+<div class="patient-access-page">
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div class="access-status-container">
+
+            {% for category, message in messages %}
+
+                {% if category == "success" %}
+
+                    <div class="access-success-card">
+
+                        <div class="success-check">
+                            ✓
+                        </div>
+
+                        <div class="success-content">
+
+                            <h3>
+                                Access Request Sent
+                            </h3>
+
+                            <p>
+                                Your request has been sent to the patient.
+                            </p>
+
+                            <div class="success-status">
+                                <span class="status-dot"></span>
+                                Waiting for Patient Approval
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                {% elif category == "info" %}
+
+                    <div class="access-info-card">
+
+                        <div class="info-icon">
+                            ℹ
+                        </div>
+
+                        <div>
+                            <h3>Access Already Exists</h3>
+                            <p>{{ message }}</p>
+                        </div>
+
+                    </div>
+
+                {% elif category == "error" %}
+
+                    <div class="access-error-card">
+
+                        <div class="error-icon">
+                            !
+                        </div>
+
+                        <div>
+                            <h3>Access Request Failed</h3>
+                            <p>{{ message }}</p>
+                        </div>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+    {% endif %}
+{% endwith %}
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+        <span class="page-badge">DOCTOR PORTAL</span>
+
+        <h1>Patient Access</h1>
+
+        <p>
+            Find a patient and request authorized temporary access
+            to their medical records.
+        </p>
+    </div>
+
+
+    <!-- SEARCH CARD -->
+    <div class="access-card">
+
+        <div class="card-icon">
+            🔍
+        </div>
+
+        <div class="card-content">
+
+            <h2>Search Patient</h2>
+
+            <p>
+                Search using the patient's Health ID.
+            </p>
+
+            <form method="GET"
+                  action="{{ url_for('doctor_patient_access') }}"
+                  class="search-form">
+
+                <input
+                    type="text"
+                    name="health_id"
+                    placeholder="Enter Health ID"
+                     value="{{ health_id or '' }}"
+                    autocomplete="off"
+                >
+
+                <button type="submit">
+                    Search Patient
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+ {% if patient %}
+
+    <div class="patient-result-card">
+
+        <div class="result-status">
+            ✓ Patient Identified
+        </div>
+
+        <div class="patient-result-header">
+
+            <div class="patient-avatar">
+                👤
+            </div>
+
+            <div>
+                <h2>
+                    {{ patient.get('full_name')
+                       or patient.get('name')
+                       or 'Not provided' }}
+                </h2>
+
+                <span>
+                    Health ID:
+                    <strong>
+                        {{ patient.get('health_id') or 'Not provided' }}
+                    </strong>
+                </span>
+            </div>
+
+        </div>
+
+
+        <div class="patient-details">
+
+            <div>
+                <span>Age</span>
+                <strong>
+                    {{ patient.get('age') or 'Not provided' }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Gender</span>
+                <strong>
+                    {{ patient.get('gender') or 'Not provided' }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Blood Group</span>
+                <strong>
+                    {{ patient.get('blood_group') or 'Not provided' }}
+                </strong>
+            </div>
+
+            <div>
+                <span>Phone</span>
+                <strong>
+                    {{ patient.get('phone')
+                       or patient.get('phone_number')
+                       or 'Not provided' }}
+                </strong>
+            </div>
+
+        </div>
+
+
+        <!-- PROTECTED RECORDS -->
+        <div class="protected-message">
+
+            <span>🔒</span>
+
+            <div>
+                <strong>Medical Records Protected</strong>
+
+                <p>
+                    Medical records can only be accessed
+                    after patient authorization.
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- REQUEST ACCESS -->
+       <div class="patient-action-buttons">
+
+    <!-- VIEW BASIC PATIENT DETAILS -->
+    <a href="{{ url_for(
+        'public_patient_info',
+        patient_id=patient.get('id')
+    ) }}"
+       class="view-details-btn">
+
+        👤 View Patient Details
+
+    </a>
+
+
+    <!-- REQUEST TEMPORARY ACCESS -->
+  <form method="POST"
+      action="{{ url_for(
+          'doctor_request_access',
+          patient_id=patient.get('id')
+      ) }}">
+
+    <input
+        type="hidden"
+        name="health_id"
+        value="{{ patient.get('health_id') or health_id }}"
+    >
+
+    <button type="submit"
+            class="request-access-btn">
+        🔐 Request Temporary Access
+    </button>
+
+</form>
+
+</div>
+
+    </div>
+
+    {% endif %}
+
+    <!-- DIVIDER -->
+    <div class="access-divider">
+        <span>OR</span>
+    </div>
+
+
+    <!-- QR CARD -->
+    <div class="access-card qr-card">
+
+        <div class="card-icon">
+            📷
+        </div>
+
+        <div class="card-content">
+
+            <h2>Scan Patient QR</h2>
+
+            <p>
+                Scan the patient's OmniCare Health ID QR code
+                to identify the patient.
+            </p>
+
+            <button type="button"
+                    class="scan-qr-btn"
+                    onclick="startQRScanner()">
+
+                📷 Scan QR Code
+
+            </button>
+
+        </div>
+
+    </div>
+
+{% if error %}
+<div class="error-message">
+    ⚠️ {{ error }}
+</div>
+{% endif %}
+    <!-- SEARCH RESULT -->
+   
+
+    <!-- QR SCANNER AREA -->
+    <div id="qrScannerContainer"
+         class="qr-scanner-container"
+         style="display: none;">
+
+        <div class="scanner-header">
+
+            <h2>Scan Patient QR</h2>
+
+            <button type="button"
+                    onclick="closeQRScanner()">
+                ✕
+            </button>
+
+        </div>
+
+        <div id="qr-reader"></div>
+
+        <p class="scanner-help">
+            Point the camera at the patient's OmniCare Health ID QR code.
+        </p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function startQRScanner() {
+
+    const scanner = document.getElementById(
+        "qrScannerContainer"
+    );
+
+    scanner.style.display = "block";
+
+    scanner.scrollIntoView({
+        behavior: "smooth"
+    });
+
+}
+
+
+function closeQRScanner() {
+
+    const scanner = document.getElementById(
+        "qrScannerContainer"
+    );
+
+    scanner.style.display = "none";
+
+}
+
+</script>
+
+{% endblock %}

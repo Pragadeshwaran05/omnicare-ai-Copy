@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Not Found - OmniCare AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public_patient_info.css') }}">
+</head>
+<body>
+
+    <div class="patient-info-wrapper">
+        <div class="patient-info-card">
+
+            <!-- HEADER -->
+            <div class="card-header">
+                <div class="brand-logo">
+                    <span class="brand-icon">♥</span> OmniCare <span>AI</span>
+                </div>
+                <div class="brand-tagline">
+                    Your Health, Always Connected
+                </div>
+            </div>
+
+            <!-- STATUS BADGE -->
+            <div class="status-badge-container">
+                <div class="status-badge" style="background-color: #fef2f2; color: #b91c1c; border-color: #fca5a5;">
+                    <span class="check-icon" style="background-color: #ef4444;">✕</span> Patient Not Found
+                </div>
+            </div>
+
+            <div class="protected-card" style="border-color: #fca5a5; background-color: #fff5f5;">
+                <h3 class="protected-title" style="color: #991b1b;">Record Unavailable</h3>
+                <p class="protected-text" style="color: #7f1d1d;">
+                    The requested patient information could not be found or the QR code link is invalid. Please check the Health ID card and try again.
+                </p>
+            </div>
+
+            <hr class="section-divider">
+
+            <!-- FOOTER -->
+            <div class="card-footer">
+                OmniCare AI • Secure • Private
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

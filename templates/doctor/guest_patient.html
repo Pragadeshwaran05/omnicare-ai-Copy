@@ -1,0 +1,330 @@
+
+{% extends "doctor_base.html" %}
+
+{% block title %}Guest Patient Record - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Guest Patient Record Access</h1>
+            <p>
+                Create a temporary patient profile, upload medical reports,
+                and review their health history securely.
+            </p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="guest-message guest-message-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="guest-card">
+        <div class="guest-card-heading">
+            <div>
+                <h2>Create Guest Patient</h2>
+                <p>Create a temporary record for a patient without an OmniCare account.</p>
+            </div>
+            <span class="guest-icon">＋</span>
+        </div>
+
+        <form
+            action="{{ url_for('create_guest_patient') }}"
+            method="POST"
+            class="guest-form"
+        >
+            <div class="guest-form-grid">
+                <div class="guest-field">
+                    <label for="full_name">Patient full name *</label>
+                    <input
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        placeholder="Enter patient name"
+                        maxlength="150"
+                        required
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="date_of_birth">Date of birth</label>
+                    <input
+                        type="date"
+                        id="date_of_birth"
+                        name="date_of_birth"
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Prefer not to say</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <button type="submit" class="guest-primary-button">
+                Create Guest Patient
+            </button>
+        </form>
+    </section>
+
+    <section class="guest-card guest-list-card">
+        <div class="guest-card-heading">
+            <div>
+                <h2>Your Guest Patients</h2>
+                <p>Temporary patient records created by your doctor account.</p>
+            </div>
+            <span class="guest-count">{{ guests|length }}</span>
+        </div>
+
+        {% if guests %}
+            <div class="guest-table-wrapper">
+                <table class="guest-table">
+                    <thead>
+                        <tr>
+                            <th>Patient</th>
+                            <th>Guest ID</th>
+                            <th>Created</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for guest in guests %}
+                        <tr>
+                            <td>
+                                <strong>{{ guest.full_name }}</strong>
+                                {% if guest.date_of_birth %}
+                                    <small>DOB: {{ guest.date_of_birth }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ guest.guest_code }}</td>
+                            <td>{{ guest.created_at[:10] if guest.created_at else "—" }}</td>
+                            <td>
+                                <span class="guest-status">
+                                    {{ guest.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <a
+                                    class="guest-open-button"
+                                    href="{{ url_for(
+                                        'doctor_guest_workspace',
+                                        guest_patient_id=guest.id
+                                    ) }}"
+                                >
+                                    Open Workspace
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="empty-patients">
+                <div class="empty-icon">👤</div>
+                <h3>No Guest Sessions Yet</h3>
+                <p>Create a guest patient above to start a separate medical record workspace.</p>
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+
+<style>
+.guest-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 4px 16px rgba(25, 25, 50, 0.04);
+}
+
+.guest-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.guest-card-heading h2 {
+    margin: 0 0 7px;
+    font-size: 20px;
+}
+
+.guest-card-heading p {
+    margin: 0;
+    color: var(--text-secondary, #6b7280);
+    font-size: 14px;
+}
+
+.guest-icon, .guest-count {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f0eaff;
+    color: #6841c6;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.guest-count {
+    font-size: 16px;
+}
+
+.guest-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.guest-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.guest-field label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.guest-field input, .guest-field select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 9px;
+    background: var(--input-bg, #fff);
+    color: inherit;
+    font: inherit;
+}
+
+.guest-field input:focus, .guest-field select:focus {
+    outline: 2px solid #b9a4f5;
+    border-color: #7652d1;
+}
+
+.guest-primary-button, .guest-open-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 42px;
+    padding: 10px 17px;
+    border: none;
+    border-radius: 9px;
+    background: #6841c6;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.guest-primary-button {
+    margin-top: 22px;
+}
+
+.guest-primary-button:hover, .guest-open-button:hover {
+    background: #5230a5;
+}
+
+.guest-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.guest-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.guest-table th, .guest-table td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--border-color, #e5e7eb);
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.guest-table th {
+    color: var(--text-secondary, #6b7280);
+    font-weight: 600;
+}
+
+.guest-table td small {
+    display: block;
+    margin-top: 5px;
+    color: var(--text-secondary, #6b7280);
+}
+
+.guest-status {
+    display: inline-block;
+    padding: 5px 9px;
+    border-radius: 20px;
+    background: #e7f7ed;
+    color: #187342;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.guest-open-button {
+    min-height: 34px;
+    padding: 7px 11px;
+    font-size: 12px;
+}
+
+.guest-message {
+    margin-top: 16px;
+    padding: 12px 15px;
+    border-radius: 9px;
+}
+
+.guest-message-success {
+    background: #e7f7ed;
+    color: #187342;
+}
+
+.guest-message-error {
+    background: #fff0f0;
+    color: #a12525;
+}
+
+@media (max-width: 760px) {
+    .guest-card {
+        padding: 17px;
+        border-radius: 13px;
+    }
+
+    .guest-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .guest-primary-button {
+        width: 100%;
+    }
+
+    .guest-table th, .guest-table td {
+        padding: 12px 10px;
+    }
+}
+</style>
+{% endblock %}

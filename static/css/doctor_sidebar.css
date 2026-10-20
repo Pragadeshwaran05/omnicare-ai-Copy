@@ -1,0 +1,997 @@
+/* =====================================================
+   OMNICARE AI - DOCTOR SIDEBAR
+   Exact same style as Patient Sidebar
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   BODY
+   ===================================================== */
+
+body {
+    margin: 0;
+
+    font-family: "Segoe UI", Arial, sans-serif;
+
+    background: #f4fbfb;
+
+    color: #102a43;
+
+    font-size: 17px;
+}
+
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+
+.doctor-sidebar {
+    position: fixed;
+
+    left: 0;
+    top: 0;
+
+    width: 271px;
+    height: 100vh;
+
+    background: linear-gradient(
+        180deg,
+        #087f7b 0%,
+        #08736f 55%,
+        #056966 100%
+    );
+
+    color: white;
+
+    padding: 12px 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 1000;
+
+    box-shadow:
+        5px 0 25px rgba(0, 90, 85, 0.10);
+
+    overflow-y: auto;
+}
+
+
+/* =====================================================
+   LOGO / BRAND
+   ===================================================== */
+
+.doctor-sidebar-brand {
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 12px 16px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.18);
+}
+
+
+/* =====================================================
+   LOGO ICON
+   ===================================================== */
+
+.doctor-brand-icon {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: white;
+
+    color: #0a8f8b;
+
+    border-radius: 11px;
+
+    font-size: 29px;
+
+    font-weight: 700;
+
+    line-height: 1;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.08);
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   LOGO TEXT
+   ===================================================== */
+
+.doctor-brand-text {
+    font-size: 23px;
+
+    font-weight: 700;
+
+    color: white;
+
+    letter-spacing: -0.4px;
+
+    white-space: nowrap;
+}
+
+
+.doctor-brand-text span {
+    color: #5ce1de;
+}
+
+
+/* =====================================================
+   SECTION TITLE
+   ===================================================== */
+
+.doctor-sidebar-section {
+    padding: 30px 18px 10px;
+
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+}
+
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+
+.doctor-sidebar-nav {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+/* =====================================================
+   NAVIGATION LINK
+   ===================================================== */
+
+.doctor-sidebar-link {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    width: 100%;
+
+    min-height: 57px;
+
+    padding: 11px 15px;
+
+    border-radius: 11px;
+
+    color: rgba(255, 255, 255, 0.96);
+
+    text-decoration: none;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.doctor-sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    transform: translateX(2px);
+}
+
+
+/* =====================================================
+   ACTIVE LINK
+   ===================================================== */
+
+.doctor-sidebar-link.active {
+    background: linear-gradient(
+        90deg,
+        rgba(57, 206, 201, 0.95),
+        rgba(29, 180, 176, 0.92)
+    );
+
+    color: white;
+
+    box-shadow:
+        0 7px 18px rgba(0, 70, 67, 0.20);
+}
+
+
+/* =====================================================
+   ACTIVE HOVER
+   ===================================================== */
+
+.doctor-sidebar-link.active:hover {
+    transform: none;
+
+    background: linear-gradient(
+        90deg,
+        #3acdc8,
+        #20b6b2
+    );
+}
+
+
+/* =====================================================
+   NAV ICON
+   ===================================================== */
+
+.doctor-nav-icon {
+    width: 30px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 21px;
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   NAV TEXT
+   ===================================================== */
+
+.doctor-nav-text {
+    display: block;
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+/* =====================================================
+   SIDEBAR BOTTOM
+   ===================================================== */
+
+.doctor-sidebar-bottom {
+    margin-top: auto;
+
+    padding-top: 18px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.18);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+.doctor-sidebar-link.doctor-logout-link {
+    color: #ffd5d5;
+}
+
+
+.doctor-sidebar-link.doctor-logout-link:hover {
+    background: rgba(255, 80, 80, 0.12);
+
+    color: #ffffff;
+}
+
+
+/* =====================================================
+   MOBILE MENU BUTTON
+   ===================================================== */
+
+.doctor-mobile-menu-button {
+    display: none;
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #0a8f8b;
+
+    color: white;
+
+    font-size: 23px;
+
+    cursor: pointer;
+
+    z-index: 1100;
+
+    box-shadow:
+        0 5px 15px rgba(0, 80, 76, 0.20);
+}
+
+
+/* =====================================================
+   SIDEBAR OVERLAY
+   ===================================================== */
+
+.doctor-sidebar-overlay {
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    z-index: 998;
+}
+
+
+/* Overlay visible */
+
+.doctor-sidebar-overlay.active {
+    display: block;
+}
+
+
+/* Sidebar above overlay */
+
+.doctor-sidebar {
+    z-index: 999;
+}
+
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+.doctor-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+
+.doctor-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+.doctor-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+
+    border-radius: 10px;
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .doctor-sidebar {
+        width: 250px;
+    }
+
+
+    .doctor-brand-text {
+        font-size: 21px;
+    }
+
+
+    .doctor-sidebar-link {
+        font-size: 16px;
+    }
+
+
+    .doctor-sidebar-section {
+        font-size: 13px;
+    }
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .doctor-sidebar {
+        left: -296px;
+
+        width: 280px;
+
+        transition:
+            left 0.3s ease;
+    }
+
+
+    .doctor-sidebar.open {
+        left: 0;
+    }
+
+
+    .doctor-mobile-menu-button {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .doctor-sidebar-link {
+        font-size: 17px;
+    }
+}
+
+
+/* =====================================================
+   HIDE MOBILE BUTTON WHEN SIDEBAR IS OPEN
+   ===================================================== */
+
+.doctor-mobile-menu-button.hidden {
+    display: none;
+}
+
+
+
+
+
+/* =====================================================
+   OMNICARE AI - DOCTOR SIDEBAR
+   Same Style & Dimensions as Patient Sidebar
+   ===================================================== */
+
+
+/* =====================================================
+   GLOBAL BOX SIZING
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   DOCTOR SIDEBAR
+   ===================================================== */
+
+.doctor-sidebar {
+
+    position: fixed;
+
+    left: 0;
+    top: 0;
+
+    width: 271px;
+    height: 100vh;
+
+    background: linear-gradient(
+        180deg,
+        #087f7b 0%,
+        #08736f 55%,
+        #056966 100%
+    );
+
+    color: white;
+
+    padding: 12px 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 1250;
+
+    box-shadow:
+        5px 0 25px rgba(0, 90, 85, 0.10);
+
+    overflow-y: auto;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        rgba(255, 255, 255, 0.25)
+        transparent;
+}
+
+
+/* =====================================================
+   SIDEBAR LOGO
+   ===================================================== */
+
+.doctor-sidebar-brand {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 12px 16px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.18);
+}
+
+
+/* LOGO ICON */
+
+.doctor-brand-icon {
+
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: white;
+
+    color: #0a8f8b;
+
+    border-radius: 11px;
+
+    font-size: 29px;
+
+    font-weight: 700;
+
+    line-height: 1;
+
+    flex-shrink: 0;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+/* LOGO TEXT */
+
+.doctor-brand-text {
+
+    font-size: 23px;
+
+    font-weight: 700;
+
+    color: white;
+
+    letter-spacing: -0.4px;
+
+    white-space: nowrap;
+}
+
+
+.doctor-brand-text span {
+
+    color: #5ce1de;
+}
+
+
+/* =====================================================
+   SECTION TITLE
+   ===================================================== */
+
+.doctor-sidebar-section {
+
+    padding: 30px 18px 10px;
+
+    color:
+        rgba(255, 255, 255, 0.75);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+}
+
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+
+.doctor-sidebar-nav {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+/* =====================================================
+   NAVIGATION LINK
+   ===================================================== */
+
+.doctor-sidebar-link {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    width: 100%;
+
+    min-height: 57px;
+
+    padding: 11px 15px;
+
+    border-radius: 11px;
+
+    color:
+        rgba(255, 255, 255, 0.96);
+
+    text-decoration: none;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   HOVER
+   ===================================================== */
+
+.doctor-sidebar-link:hover {
+
+    background:
+        rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    transform:
+        translateX(2px);
+}
+
+
+/* =====================================================
+   ACTIVE LINK
+   ===================================================== */
+
+.doctor-sidebar-link.active {
+
+    background: linear-gradient(
+        90deg,
+        rgba(57, 206, 201, 0.95),
+        rgba(29, 180, 176, 0.92)
+    );
+
+    color: white;
+
+    box-shadow:
+        0 7px 18px
+        rgba(0, 70, 67, 0.20);
+}
+
+
+.doctor-sidebar-link.active:hover {
+
+    transform: none;
+
+    background: linear-gradient(
+        90deg,
+        #3acdc8,
+        #20b6b2
+    );
+}
+
+
+/* =====================================================
+   NAVIGATION ICON
+   ===================================================== */
+
+.doctor-nav-icon {
+
+    width: 30px;
+
+    min-width: 30px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 21px;
+
+    line-height: 1;
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   NAVIGATION TEXT
+   ===================================================== */
+
+.doctor-nav-text {
+
+    display: block;
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+/* =====================================================
+   SIDEBAR BOTTOM
+   ===================================================== */
+
+.doctor-sidebar-bottom {
+
+    margin-top: auto;
+
+    padding-top: 18px;
+
+    border-top:
+        1px solid rgba(255, 255, 255, 0.18);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+.doctor-logout-link {
+
+    color: #ffd5d5;
+}
+
+
+.doctor-logout-link:hover {
+
+    background:
+        rgba(255, 80, 80, 0.12);
+
+    color: #ffffff;
+}
+
+
+/* =====================================================
+   SIDEBAR SCROLLBAR
+   ===================================================== */
+
+.doctor-sidebar::-webkit-scrollbar {
+
+    width: 5px;
+}
+
+
+.doctor-sidebar::-webkit-scrollbar-track {
+
+    background: transparent;
+}
+
+
+.doctor-sidebar::-webkit-scrollbar-thumb {
+
+    background:
+        rgba(255, 255, 255, 0.25);
+
+    border-radius: 10px;
+}
+
+
+.doctor-sidebar::-webkit-scrollbar-thumb:hover {
+
+    background:
+        rgba(255, 255, 255, 0.40);
+}
+
+
+/* =====================================================
+   SIDEBAR OVERLAY
+   ===================================================== */
+
+.doctor-sidebar-overlay {
+
+    display: none;
+
+    position: fixed;
+
+    inset: 0;
+
+    background:
+        rgba(0, 0, 0, 0.35);
+
+    z-index: 1190;
+}
+
+
+.doctor-sidebar-overlay.active {
+
+    display: block;
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .doctor-sidebar {
+
+        width: 250px;
+
+    }
+
+
+    .doctor-brand-text {
+
+        font-size: 21px;
+
+    }
+
+
+    .doctor-sidebar-link {
+
+        font-size: 16px;
+
+    }
+
+
+    .doctor-sidebar-section {
+
+        font-size: 13px;
+
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .doctor-sidebar {
+
+        left: -296px;
+
+        width: 280px;
+
+        height: 100vh;
+
+        transition:
+            left 0.3s ease;
+
+        z-index: 1250;
+    }
+
+
+    .doctor-sidebar.open {
+
+        left: 0;
+
+    }
+
+
+    .doctor-sidebar-link {
+
+        font-size: 17px;
+
+    }
+
+
+    .doctor-sidebar-overlay {
+
+        z-index: 1190;
+
+    }
+
+}
+
+
+/* =====================================================
+   SMALL MOBILE
+   ===================================================== */
+
+@media (max-width: 380px) {
+
+    .doctor-sidebar {
+
+        width: 275px;
+
+        left: -291px;
+
+    }
+
+
+    .doctor-brand-text {
+
+        font-size: 20px;
+
+    }
+
+
+    .doctor-sidebar-link {
+
+        min-height: 55px;
+
+        font-size: 16px;
+
+    }
+
+}
+
+
+/* =====================================================
+   DESKTOP SAFETY
+   ===================================================== */
+
+@media (min-width: 701px) {
+
+    .doctor-sidebar {
+
+        left: 0;
+
+    }
+
+
+    .doctor-sidebar-overlay {
+
+        display: none !important;
+
+    }
+
+}

@@ -1,0 +1,20 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}Access & Audit - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Access &amp; Audit Log</h1>
+            <p>View patient access permissions and doctor activity audit logs.</p>
+        </div>
+    </div>
+    <div class="empty-patients">
+        <div class="empty-icon">🔐</div>
+        <h3>No audit records found</h3>
+        <p>Your access permissions and patient authorization logs will be displayed here.</p>
+    </div>
+</div>
+{% endblock %}

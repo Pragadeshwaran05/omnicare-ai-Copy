@@ -1,0 +1,120 @@
+# ==========================================
+# PYTHON CACHE
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# ==========================================
+# VIRTUAL ENVIRONMENTS
+# ==========================================
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# ==========================================
+# ENVIRONMENT VARIABLES AND SECRETS
+# ==========================================
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
+service-account*.json
+
+# ==========================================
+# LOCAL DATABASES
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+
+# ==========================================
+# MEDICAL RECORDS AND PRIVATE UPLOADS
+# ==========================================
+uploads/
+private_uploads/
+medical_records/
+patient_records/
+guest_patient_records/
+*.pdf
+*.docx
+*.xlsx
+*.csv
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.dicom
+*.dcm
+
+# ==========================================
+# MACHINE LEARNING MODEL FILES
+# ==========================================
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.onnx
+*.pt
+*.pth
+
+# ==========================================
+# LOGS AND TEMPORARY FILES
+# ==========================================
+*.log
+logs/
+tmp/
+temp/
+.cache/
+*.tmp
+
+# ==========================================
+# JUPYTER
+# ==========================================
+.ipynb_checkpoints/
+
+# ==========================================
+# VS CODE AND IDE
+# ==========================================
+.vscode/
+.idea/
+*.code-workspace
+
+# ==========================================
+# OPERATING SYSTEM FILES
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# TEST AND COVERAGE OUTPUT
+# ==========================================
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ==========================================
+# BUILD OUTPUT
+# ==========================================
+build/
+dist/
+*.egg-info/
+
+# ==========================================
+# FRONTEND DEPENDENCIES (IF USED)
+# ==========================================
+node_modules/
+
+# ==========================================
+# LOCAL CONFIGURATION
+# ==========================================
+instance/

@@ -1,0 +1,192 @@
+
+{% extends "doctor_base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_my_patients.css') }}">
+
+<div class="my-patients-page">
+
+    <div class="my-patients-header">
+        <div>
+            <h1>Shared Medical Records</h1>
+            <p>
+                Patients who have granted you ongoing access to their
+                medical records.
+            </p>
+        </div>
+    </div>
+
+    <div class="patients-toolbar">
+        <div class="patient-search-box">
+            <span>🔎</span>
+            <input
+                type="text"
+                id="sharedPatientSearch"
+                placeholder="Search by patient name..."
+                autocomplete="off">
+        </div>
+    </div>
+
+    {% if error %}
+        <div class="patients-error">{{ error }}</div>
+    {% endif %}
+
+    <section class="patients-section">
+
+        <div class="section-heading">
+            <div>
+                <h2>🟢 Permanent Access</h2>
+                <p>
+                    Access remains active until the patient revokes it.
+                </p>
+            </div>
+
+            <span class="patient-count">{{ patients|length }}</span>
+        </div>
+
+        {% if patients %}
+
+            <div class="patients-grid" id="sharedPatientsGrid">
+
+                {% for patient in patients %}
+
+                    <div class="patient-card"
+                         data-name="{{ (patient.get('full_name') or patient.get('name') or 'Patient')|lower }}">
+
+                        <div class="patient-card-top">
+
+                            <div class="patient-avatar">👤</div>
+
+                            <div class="patient-main-info">
+                                <h3>
+                                    {{ patient.get('full_name')
+                                       or patient.get('name')
+                                       or 'Patient' }}
+                                </h3>
+
+                                <p>
+                                    Patient ID:
+                                    <strong>{{ patient.get('id', 'Not available') }}</strong>
+                                </p>
+                            </div>
+
+                            <span class="access-badge permanent">
+                                🟢 Permanent Access
+                            </span>
+
+                        </div>
+
+                        <div class="patient-details">
+
+                            <div class="patient-detail">
+                                <span class="detail-label">Gender</span>
+                                <span class="detail-value">
+                                    {{ patient.get('gender') or 'Not specified' }}
+                                </span>
+                            </div>
+
+                            <div class="patient-detail">
+                                <span class="detail-label">Blood Group</span>
+                                <span class="detail-value">
+                                    {{ patient.get('blood_group') or 'Not specified' }}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <div class="access-information">
+
+                            <div class="access-line">
+                                <span>🔐</span>
+                                <span>Permanent access is active</span>
+                            </div>
+
+                            <div class="approved-line">
+                                Access granted:
+                                {{ patient.get('approved_at_display') or 'Date unavailable' }}
+                            </div>
+
+                            <div class="approved-line">
+                                Access remains active until the patient revokes it.
+                            </div>
+
+                        </div>
+
+                        <div class="patient-card-action">
+                            <a
+                                href="{{ url_for(
+                                    'doctor_patient_workspace',
+                                    patient_id=patient.patient_id
+                                ) }}"
+                                class="open-patient-btn">
+                                Open Patient Workspace <span>→</span>
+                            </a>
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+            <div id="sharedNoResults"
+                 class="no-search-results"
+                 style="display:none;">
+                <div class="no-search-icon">🔎</div>
+                <h3>No matching patients</h3>
+                <p>Try another patient name.</p>
+            </div>
+
+        {% else %}
+
+            <div class="empty-patients">
+                <div class="empty-patients-icon">🗂️</div>
+                <h2>No Shared Medical Records Yet</h2>
+                <p>
+                    Patients with active permanent access will appear here.
+                </p>
+                <a href="{{ url_for('doctor_my_patients') }}"
+                   class="find-patient-btn">
+                    View My Patients
+                </a>
+            </div>
+
+        {% endif %}
+
+    </section>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const search = document.getElementById("sharedPatientSearch");
+    const cards = document.querySelectorAll(
+        "#sharedPatientsGrid .patient-card"
+    );
+    const noResults = document.getElementById("sharedNoResults");
+
+    if (!search) return;
+
+    search.addEventListener("input", function () {
+        const query = search.value.toLowerCase().trim();
+        let visible = 0;
+
+        cards.forEach(function (card) {
+            const name = card.dataset.name || "";
+            const matches = name.includes(query);
+
+            card.style.display = matches ? "" : "none";
+
+            if (matches) visible++;
+        });
+
+        if (noResults) {
+            noResults.style.display = visible === 0 ? "block" : "none";
+        }
+    });
+});
+</script>
+
+{% endblock %}

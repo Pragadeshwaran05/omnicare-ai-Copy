@@ -1,0 +1,602 @@
+{% extends "patient_base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/patient_access_requests.css') }}">
+
+<div class="access-requests-page">
+
+    <!-- =====================================================
+         PAGE HEADER
+         ===================================================== -->
+
+    <div class="page-header">
+
+        <div>
+
+            <h1>
+                Access Requests
+            </h1>
+
+            <p>
+                Manage doctors requesting access to your medical records.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ERROR
+         ===================================================== -->
+
+    {% if error %}
+
+        <div class="error-message">
+            {{ error }}
+        </div>
+
+    {% endif %}
+
+
+    {% if access_requests %}
+
+        <div class="requests-list">
+
+            {% for access in access_requests %}
+
+                <div class="access-request-card">
+
+
+                    <!-- =================================================
+                         REQUEST HEADER
+                         ================================================= -->
+
+                    <div class="request-top">
+
+                        <div class="doctor-icon">
+                            👨‍⚕️
+                        </div>
+
+
+                        <div class="request-info">
+
+                            <h3>
+                                Doctor Access Request
+                            </h3>
+
+                            <p>
+
+                                {% if access.status == 'pending' %}
+
+                                    A doctor is requesting access to your
+                                    medical records.
+
+                                {% elif access.status == 'active' %}
+
+                                    This doctor currently has authorized
+                                    access to your medical records.
+
+                                {% elif access.status == 'rejected' %}
+
+                                    You rejected this doctor's access request.
+
+                                {% elif access.status == 'revoked' %}
+
+                                    You revoked this doctor's access.
+
+                                {% elif access.status == 'expired' %}
+
+                                    This doctor's temporary access has expired.
+
+                                {% endif %}
+
+                            </p>
+
+                        </div>
+
+
+                        <!-- STATUS -->
+
+                        <div class="request-status
+                            {% if access.status == 'pending' %}
+                                pending
+                            {% elif access.status == 'active' %}
+                                active
+                            {% elif access.status == 'rejected' %}
+                                rejected
+                            {% elif access.status == 'revoked' %}
+                                revoked
+                            {% elif access.status == 'expired' %}
+                                rejected
+                            {% endif %}
+                        ">
+
+                            {{ access.status|capitalize }}
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         REQUEST DETAILS
+                         ================================================= -->
+
+                  <!-- =================================================
+     REQUEST DETAILS
+     ================================================= -->
+
+<div class="access-request-details">
+
+    <!-- DOCTOR -->
+
+    <div class="access-detail-item">
+
+        <span class="access-detail-label">
+            DOCTOR
+        </span>
+
+        <div class="access-detail-value">
+            <span class="detail-icon">👨‍⚕️</span>
+            <strong>{{ access.doctor_name or "Doctor" }}</strong>
+        </div>
+
+    </div>
+
+
+    <!-- HOSPITAL -->
+
+    <div class="access-detail-item">
+
+        <span class="access-detail-label">
+            HOSPITAL
+        </span>
+
+        <div class="access-detail-value">
+            <span class="detail-icon">🏥</span>
+            <strong>{{ access.hospital_name or "Not provided" }}</strong>
+        </div>
+
+    </div>
+
+
+    <!-- HOSPITAL ADDRESS -->
+
+    <div class="access-detail-item">
+
+        <span class="access-detail-label">
+            HOSPITAL ADDRESS
+        </span>
+
+        <div class="access-detail-value">
+            <span class="detail-icon">📍</span>
+            <strong>{{ access.hospital_address or "Not provided" }}</strong>
+        </div>
+
+    </div>
+
+
+    <!-- REQUESTED ON -->
+
+    <div class="access-detail-item">
+
+        <span class="access-detail-label">
+            REQUESTED ON
+        </span>
+
+        <div class="access-detail-value">
+            <span class="detail-icon">🕐</span>
+            <strong>{{ access.requested_at_display or "Not available" }}</strong>
+        </div>
+
+    </div>
+
+</div>
+
+
+                    <!-- =================================================
+                         PENDING REQUEST
+                         ================================================= -->
+
+                    {% if access.status == 'pending' %}
+
+                        <div class="request-message">
+
+                            <strong>
+                                🔐 Permission Required
+                            </strong>
+
+                            <p>
+                                This doctor is requesting access to your
+                                authorized medical records. Choose how
+                                you want to provide access.
+                            </p>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             ALLOW / REJECT BUTTONS
+                             ================================================= -->
+
+                        <div class="request-actions">
+
+
+                            <!-- ALLOW -->
+
+                            <button
+                                type="button"
+                                class="allow-btn"
+                                onclick="toggleAccessOptions('{{ access.id }}')"
+                            >
+
+                                ✓ Allow Access
+
+                            </button>
+
+
+                            <!-- REJECT -->
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'patient_reject_access',
+                                    request_id=access.id
+                                ) }}"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="reject-btn"
+                                >
+
+                                    ✕ Reject
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             ACCESS OPTIONS
+                             ================================================= -->
+
+                        <div
+                            id="access-options-{{ access.id }}"
+                            class="access-options-panel"
+                            style="display: none;"
+                        >
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'patient_approve_access',
+                                    request_id=access.id
+                                ) }}"
+                            >
+
+                                <!-- PANEL HEADER -->
+
+                                <div class="access-options-header">
+
+                                    <h3>
+                                        🔐 Allow Access
+                                    </h3>
+
+                                    <p>
+                                        How should this doctor access
+                                        your records?
+                                    </p>
+
+                                </div>
+
+
+                                <!-- =================================================
+                                     ONE-TIME ACCESS
+                                     ================================================= -->
+
+                                <label class="access-option">
+
+                                    <input
+                                        type="radio"
+                                        name="access_type"
+                                        value="one_time"
+                                        required
+                                    >
+
+                                    <span class="access-radio"></span>
+
+                                    <span class="access-option-content">
+
+                                        <strong>
+                                            One-Time Access
+                                        </strong>
+
+                                        <small>
+                                            Allow the doctor to view your
+                                            records for this consultation only.
+                                        </small>
+
+                                    </span>
+
+                                </label>
+
+
+                                <!-- =================================================
+                                     TEMPORARY ACCESS
+                                     ================================================= -->
+
+                                <label class="access-option">
+
+                                    <input
+                                        type="radio"
+                                        name="access_type"
+                                        value="temporary"
+                                    >
+
+                                    <span class="access-radio"></span>
+
+                                    <span class="access-option-content">
+
+                                        <strong>
+                                            Temporary Access
+                                        </strong>
+
+                                        <small>
+                                            Allow the doctor to access your
+                                            records for 4 hours.
+                                        </small>
+
+                                    </span>
+
+                                </label>
+
+
+                                <!-- =================================================
+                                     PERMANENT ACCESS
+                                     ================================================= -->
+
+                                <label class="access-option">
+
+                                    <input
+                                        type="radio"
+                                        name="access_type"
+                                        value="permanent"
+                                    >
+
+                                    <span class="access-radio"></span>
+
+                                    <span class="access-option-content">
+
+                                        <strong>
+                                            Permanent Access
+                                        </strong>
+
+                                        <small>
+                                            Allow the doctor to access your
+                                            records until you revoke it.
+                                        </small>
+
+                                    </span>
+
+                                </label>
+
+
+                                <!-- =================================================
+                                     CONFIRM ACCESS
+                                     ================================================= -->
+
+                                <button
+                                    type="submit"
+                                    class="confirm-access-btn"
+                                >
+
+                                    Confirm Access
+
+                                </button>
+
+
+                            </form>
+
+                        </div>
+
+
+                    <!-- =================================================
+                         ACTIVE ACCESS
+                         ================================================= -->
+
+                    {% elif access.status == 'active' %}
+
+                        <div class="active-message">
+
+                            <strong>
+                                ✓ Access Granted
+                            </strong>
+
+                            <p>
+                                You have allowed this doctor to access
+                                your medical records.
+                            </p>
+
+
+                            <!-- ACCESS TYPE -->
+
+                            {% if access.access_type == 'one_time' %}
+
+                                <div class="active-access-type">
+                                    🔵 One-Time Access
+                                </div>
+
+                            {% elif access.access_type == 'temporary' %}
+
+                                <div class="active-access-type">
+                                    🟡 Temporary Access — 4 Hours
+                                </div>
+
+                            {% elif access.access_type == 'permanent' %}
+
+                                <div class="active-access-type">
+                                    🟢 Permanent Access
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <!-- =================================================
+                             REVOKE ACCESS
+                             ================================================= -->
+
+                        <div class="revoke-access-area">
+
+                           <form
+    method="POST"
+    action="{{ url_for(
+        'patient_revoke_access',
+        request_id=access.id
+    ) }}"
+    onsubmit="return confirmRevokeAccess();"
+>
+
+                                <button
+                                    type="submit"
+                                    class="revoke-access-btn"
+                                >
+
+                                    🚫 Revoke Access
+
+                                </button>
+
+                            </form>
+
+                            <p>
+                                You can revoke this doctor's access
+                                at any time.
+                            </p>
+
+                        </div>
+
+
+                    <!-- =================================================
+                         REJECTED
+                         ================================================= -->
+
+                    {% elif access.status == 'rejected' %}
+
+                        <div class="rejected-message">
+
+                            ✕ You rejected this access request.
+
+                        </div>
+
+
+                    <!-- =================================================
+                         REVOKED
+                         ================================================= -->
+
+                    {% elif access.status == 'revoked' %}
+
+                        <div class="rejected-message">
+
+                            ✕ You revoked this doctor's access.
+
+                        </div>
+
+
+                    <!-- =================================================
+                         EXPIRED
+                         ================================================= -->
+
+                    {% elif access.status == 'expired' %}
+
+                        <div class="rejected-message">
+
+                            ⏱ This temporary access has expired.
+
+                        </div>
+
+                    {% endif %}
+
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+    {% else %}
+
+
+        <!-- =====================================================
+             EMPTY STATE
+             ===================================================== -->
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                🔐
+            </div>
+
+            <h2>
+                No Access Requests
+            </h2>
+
+            <p>
+                You currently don't have any doctor access requests.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<script>
+    
+
+function toggleAccessOptions(requestId) {
+
+    const panel = document.getElementById(
+        "access-options-" + requestId
+    );
+
+    if (!panel) {
+        return;
+    }
+
+    if (panel.style.display === "none") {
+
+        panel.style.display = "block";
+
+    } else {
+
+        panel.style.display = "none";
+
+    }
+
+}
+
+
+function confirmRevokeAccess() {
+
+    return window.confirm(
+        "Are you sure you want to revoke this doctor's access?"
+    );
+
+}
+
+</script>
+
+{% endblock %}

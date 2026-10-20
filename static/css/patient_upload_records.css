@@ -1,0 +1,885 @@
+/* =====================================================
+   OMNICARE AI
+   PATIENT - UPLOAD RECORDS
+   Green / Teal Healthcare Theme
+   ===================================================== */
+
+.upload-page {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+
+/* =====================================================
+   PAGE HEADER
+   ===================================================== */
+
+.upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    margin-bottom: 30px;
+}
+
+
+.upload-badge {
+    display: inline-block;
+
+    padding: 7px 13px;
+
+    background: #E7F8F8;
+
+    color: #08777A;
+
+    border-radius: 20px;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    letter-spacing: .6px;
+
+    margin-bottom: 12px;
+}
+
+
+.upload-header h1 {
+    margin: 0 0 8px;
+
+    color: #102A43;
+
+    font-size: 34px;
+
+    line-height: 1.2;
+
+    font-weight: 700;
+
+    letter-spacing: -.6px;
+}
+
+
+.upload-header p {
+    margin: 0;
+
+    color: #668096;
+
+    font-size: 17px;
+
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   SECURITY BADGE
+   ===================================================== */
+
+.secure-badge {
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    padding: 12px 17px;
+
+    background: white;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 11px;
+
+    color: #527080;
+
+    font-size: 15px;
+
+    font-weight: 600;
+}
+
+
+.secure-dot {
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background: #22B573;
+}
+
+
+/* =====================================================
+   MAIN GRID
+   ===================================================== */
+
+.upload-grid {
+
+    display: grid;
+
+    grid-template-columns:
+        1.7fr 1fr;
+
+    gap: 22px;
+
+    margin-bottom: 22px;
+}
+
+
+/* =====================================================
+   UPLOAD CARD
+   ===================================================== */
+
+.upload-card {
+
+    background: white;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 18px;
+
+    padding: 28px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(16, 42, 67, .04);
+}
+
+
+/* =====================================================
+   CARD HEADING
+   ===================================================== */
+
+.card-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-bottom: 25px;
+}
+
+
+.heading-icon {
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #E7F8F8;
+
+    border-radius: 12px;
+
+    font-size: 23px;
+}
+
+
+.card-heading h2 {
+
+    margin: 0 0 5px;
+
+    color: #102A43;
+
+    font-size: 22px;
+
+    font-weight: 700;
+}
+
+
+.card-heading p {
+
+    margin: 0;
+
+    color: #7890A0;
+
+    font-size: 15px;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   FILE DROP AREA
+   ===================================================== */
+
+.file-drop-area {
+
+    border: 2px dashed #B9DEDF;
+
+    background: #F7FCFC;
+
+    border-radius: 15px;
+
+    padding: 35px 25px;
+
+    text-align: center;
+
+    transition: .2s ease;
+
+    margin-bottom: 25px;
+}
+
+
+.file-drop-area:hover {
+
+    border-color: #0F9FA3;
+
+    background: #F1FBFB;
+}
+
+
+.upload-cloud {
+
+    font-size: 43px;
+
+    margin-bottom: 10px;
+}
+
+
+.file-drop-area h3 {
+
+    margin: 0 0 7px;
+
+    color: #183B56;
+
+    font-size: 19px;
+
+    font-weight: 700;
+}
+
+
+.file-drop-area p {
+
+    margin: 0 0 18px;
+
+    color: #7890A0;
+
+    font-size: 15px;
+}
+
+
+/* =====================================================
+   HIDDEN FILE INPUT
+   ===================================================== */
+
+#record_file {
+
+    display: none;
+}
+
+
+/* =====================================================
+   CHOOSE FILE BUTTON
+   ===================================================== */
+
+.choose-file-btn {
+
+    display: inline-block;
+
+    padding: 11px 19px;
+
+    background: #0F9FA3;
+
+    color: white;
+
+    border-radius: 9px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.choose-file-btn:hover {
+
+    background: #08777A;
+
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   SELECTED FILE
+   ===================================================== */
+
+.selected-file {
+
+    display: block;
+
+    margin-top: 14px;
+
+    color: #8A9EAC;
+
+    font-size: 14px;
+}
+
+
+.selected-file.file-selected {
+
+    color: #08777A;
+
+    font-weight: 600;
+}
+
+
+.file-drop-area small {
+
+    display: block;
+
+    margin-top: 15px;
+
+    color: #94A7B3;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   FORM
+   ===================================================== */
+
+.record-form {
+
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 18px;
+
+    margin-bottom: 25px;
+}
+
+
+.form-group {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+.form-group.full-width {
+
+    grid-column: 1 / -1;
+}
+
+
+.form-group label {
+
+    color: #183B56;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+.form-group label span {
+
+    color: #94A7B3;
+
+    font-weight: 400;
+
+    font-size: 13px;
+}
+
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+
+    width: 100%;
+
+    border: 1px solid #D6E7E8;
+
+    background: #FFFFFF;
+
+    border-radius: 9px;
+
+    padding: 12px 14px;
+
+    color: #183B56;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition: .2s ease;
+}
+
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+
+    border-color: #0F9FA3;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(15, 159, 163, .10);
+}
+
+
+.form-group textarea {
+
+    resize: vertical;
+
+    min-height: 100px;
+}
+
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+
+    color: #A1B1BC;
+}
+
+
+/* =====================================================
+   ACTION BUTTONS
+   ===================================================== */
+
+.upload-actions {
+
+    display: flex;
+
+    justify-content: flex-end;
+
+    align-items: center;
+
+    gap: 12px;
+}
+
+
+.cancel-btn {
+
+    padding: 11px 18px;
+
+    border: 1px solid #D6E7E8;
+
+    background: white;
+
+    color: #527080;
+
+    border-radius: 9px;
+
+    text-decoration: none;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    transition: .2s ease;
+}
+
+
+.cancel-btn:hover {
+
+    background: #F5FAFA;
+
+    color: #183B56;
+}
+
+
+.upload-submit-btn {
+
+    border: none;
+
+    padding: 12px 20px;
+
+    background: #0F9FA3;
+
+    color: white;
+
+    border-radius: 9px;
+
+    font-family: inherit;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition: .2s ease;
+}
+
+
+.upload-submit-btn:hover {
+
+    background: #08777A;
+
+    transform: translateY(-1px);
+}
+
+
+/* =====================================================
+   INFORMATION CARD
+   ===================================================== */
+
+.upload-info-card {
+
+    background:
+        linear-gradient(
+            145deg,
+            #FFFFFF,
+            #F1FBFB
+        );
+
+    border: 1px solid #CDE9EA;
+
+    border-radius: 18px;
+
+    padding: 28px;
+}
+
+
+.info-icon {
+
+    width: 50px;
+    height: 50px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #E7F8F8;
+
+    border-radius: 13px;
+
+    font-size: 24px;
+
+    margin-bottom: 16px;
+}
+
+
+.upload-info-card h2 {
+
+    margin: 0 0 10px;
+
+    color: #102A43;
+
+    font-size: 22px;
+
+    font-weight: 700;
+}
+
+
+.upload-info-card > p {
+
+    margin: 0 0 25px;
+
+    color: #668096;
+
+    font-size: 15px;
+
+    line-height: 1.7;
+}
+
+
+/* =====================================================
+   INFO ITEMS
+   ===================================================== */
+
+.info-item {
+
+    display: flex;
+
+    gap: 12px;
+
+    padding: 15px 0;
+
+    border-top: 1px solid #DCEDEE;
+}
+
+
+.info-item-icon {
+
+    width: 38px;
+    height: 38px;
+
+    min-width: 38px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #EAF8F8;
+
+    border-radius: 9px;
+
+    font-size: 17px;
+}
+
+
+.info-item strong {
+
+    display: block;
+
+    color: #183B56;
+
+    font-size: 15px;
+
+    margin-bottom: 4px;
+}
+
+
+.info-item span {
+
+    display: block;
+
+    color: #7890A0;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   SUPPORTED RECORDS
+   ===================================================== */
+
+.supported-card {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 25px;
+
+    background: white;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 18px;
+
+    padding: 24px 28px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(16, 42, 67, .04);
+}
+
+
+.supported-card h2 {
+
+    margin: 0 0 6px;
+
+    color: #102A43;
+
+    font-size: 20px;
+}
+
+
+.supported-card p {
+
+    margin: 0;
+
+    color: #7890A0;
+
+    font-size: 14px;
+}
+
+
+.record-types {
+
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 10px;
+
+    justify-content: flex-end;
+}
+
+
+.record-type {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    padding: 9px 12px;
+
+    background: #F5FBFB;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 9px;
+
+    color: #527080;
+
+    font-size: 13px;
+}
+
+
+.record-type span {
+
+    font-size: 17px;
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 1000px) {
+
+    .upload-grid {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .upload-info-card {
+
+        margin-top: 0;
+    }
+
+
+    .supported-card {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+
+    .record-types {
+
+        justify-content: flex-start;
+    }
+
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .upload-header {
+
+        flex-direction: column;
+
+        gap: 18px;
+    }
+
+
+    .upload-header h1 {
+
+        font-size: 28px;
+    }
+
+
+    .upload-header p {
+
+        font-size: 15px;
+    }
+
+
+    .secure-badge {
+
+        font-size: 14px;
+    }
+
+
+    .upload-card,
+    .upload-info-card {
+
+        padding: 20px;
+    }
+
+
+    .card-heading h2 {
+
+        font-size: 19px;
+    }
+
+
+    .card-heading p {
+
+        font-size: 14px;
+    }
+
+
+    .file-drop-area {
+
+        padding: 28px 15px;
+    }
+
+
+    .record-form {
+
+        grid-template-columns: 1fr;
+    }
+
+
+    .form-group.full-width {
+
+        grid-column: auto;
+    }
+
+
+    .upload-actions {
+
+        flex-direction: column-reverse;
+
+        width: 100%;
+    }
+
+
+    .cancel-btn,
+    .upload-submit-btn {
+
+        width: 100%;
+
+        text-align: center;
+    }
+
+
+    .supported-card {
+
+        padding: 20px;
+    }
+
+
+    .record-types {
+
+        width: 100%;
+
+        display: grid;
+
+        grid-template-columns: 1fr 1fr;
+    }
+
+
+    .record-type {
+
+        justify-content: center;
+    }
+
+}

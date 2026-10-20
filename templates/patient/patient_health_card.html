@@ -1,0 +1,429 @@
+{% extends "patient_base.html" %}
+
+{% block title %}QR / Health ID - OmniCare AI{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/patient_health_card.css') }}">
+
+<div class="health-card-page">
+
+    <!-- PAGE HEADER -->
+    <div class="health-card-page-header">
+        <div>
+            <h1>QR / Health ID</h1>
+            <p>Your digital identity for secure, temporary medical access</p>
+        </div>
+    </div>
+
+
+    <!-- =====================================================
+         HEALTH CARDS
+         ===================================================== -->
+
+    <div class="health-cards-wrapper">
+
+        <!-- =================================================
+             FRONT SIDE
+             ================================================= -->
+
+        <div class="health-card health-card-front">
+
+            <!-- HEADER -->
+            <div class="card-top front-top">
+
+                <div class="brand-section">
+
+                    <div class="brand-heart">
+                        ♥
+                    </div>
+
+                    <div>
+                        <div class="brand-name">
+                            OmniCare <span>AI</span>
+                        </div>
+
+                        <div class="brand-tagline">
+                            Your Health, Always Connected
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card-type">
+                    <div>DIGITAL</div>
+                    <div>HEALTH CARD</div>
+                </div>
+
+            </div>
+
+
+            <!-- CURVED HEADER DECORATION -->
+            <div class="front-wave"></div>
+
+
+            <!-- FRONT CONTENT -->
+            <div class="front-content">
+
+                <!-- PATIENT PHOTO -->
+                <div class="patient-photo-section">
+
+                    {% if patient.photo_url %}
+
+                        <img
+                            src="{{ patient.photo_url }}"
+                            alt="Patient Photo"
+                            class="patient-photo"
+                        >
+
+                    {% else %}
+
+                        <div class="patient-photo placeholder-photo">
+                            <span>👤</span>
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- PATIENT BASIC DETAILS -->
+                <div class="patient-main-details">
+
+                    <h2>
+                        {{ patient.full_name or patient.name or "PATIENT NAME" }}
+                    </h2>
+
+                    <div class="health-id-display">
+                        Health ID :
+                        
+                             <strong>{{ health_id }}</strong>
+
+                        
+                    </div>
+
+
+                    <div class="patient-detail-row">
+                        <span class="detail-icon">♟</span>
+                        <span class="detail-label">Age</span>
+                        <span class="detail-colon">:</span>
+                        <strong>
+                            {{ patient.age or "—" }} Years
+                        </strong>
+                    </div>
+
+
+                    <div class="patient-detail-row">
+                        <span class="detail-icon">♂</span>
+                        <span class="detail-label">Gender</span>
+                        <span class="detail-colon">:</span>
+                        <strong>
+                            {{ patient.gender or "—" }}
+                        </strong>
+                    </div>
+
+
+                    <div class="patient-detail-row">
+                        <span class="detail-icon blood-icon">♥</span>
+                        <span class="detail-label">Blood Group</span>
+                        <span class="detail-colon">:</span>
+                        <strong>
+                            {{ patient.blood_group or "—" }}
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <!-- QR CODE -->
+                <div class="qr-section">
+
+                  <div class="qr-box">
+
+        {% if qr_code %}
+
+        <img
+            src="data:image/png;base64,{{ qr_code }}"
+            alt="OmniCare AI Health ID QR Code"
+            class="real-qr-code"
+        >
+
+        {% else %}
+
+        <div class="qr-error">
+            QR unavailable
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <div class="qr-health-id">
+        {{ health_id }}
+    </div>
+
+    <p class="qr-instruction">
+        Scan QR to identify patient
+    </p>
+
+    <p class="qr-otp-note">
+        OTP required for medical record access
+    </p>
+</div>
+
+            </div>
+
+
+            <!-- LOWER INFORMATION -->
+            <div class="front-contact-section">
+
+                <div class="contact-item">
+
+                    <div class="contact-icon">
+                        ☎
+                    </div>
+
+                    <div>
+                        <small>Emergency Contact</small>
+
+                        <strong>
+                            {{ patient.emergency_contact or "Not provided" }}
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="contact-item">
+
+                    <div class="contact-icon">
+                        👥
+                    </div>
+
+                    <div>
+                        <small>Relation</small>
+
+                        <strong>
+                            {{ patient.emergency_relation or "Not provided" }}
+                        </strong>
+                    </div>
+
+                </div>
+
+
+                <div class="contact-item">
+
+                    <div class="contact-icon">
+                        📍
+                    </div>
+
+                    <div>
+                        <small>Address</small>
+
+                        <strong>
+                            {{ patient.address or "Not provided" }}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- FRONT FOOTER -->
+            <div class="card-footer">
+
+                <span>♜</span>
+
+                Secure&nbsp; | &nbsp;Private&nbsp; | &nbsp;Patient Controlled
+
+                <span class="footer-heart">♥</span>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             BACK SIDE
+             ================================================= -->
+
+        <div class="health-card health-card-back">
+
+            <!-- HEADER -->
+            <div class="card-top back-top">
+
+                <div class="brand-section">
+
+                    <div class="brand-heart">
+                        ♥
+                    </div>
+
+                    <div>
+                        <div class="brand-name">
+                            OmniCare <span>AI</span>
+                        </div>
+
+                        <div class="brand-tagline">
+                            Your Health, Always Connected
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card-type">
+                    <div>DIGITAL</div>
+                    <div>HEALTH CARD</div>
+                </div>
+
+            </div>
+
+
+            <!-- BACK BODY -->
+            <div class="back-content">
+
+
+
+                <!-- IMPORTANT INFORMATION -->
+                <div class="back-info-box important-info-box">
+
+                    <div class="box-title important-title">
+                        ⓘ &nbsp; IMPORTANT INFORMATION
+                    </div>
+
+                    <div class="back-row">
+                        <strong>Allergies</strong>
+                        <span>:</span>
+                        <span>
+                            {{ patient.allergies or "None reported" }}
+                        </span>
+                    </div>
+
+                    <div class="back-row">
+                        <strong>Chronic Condition</strong>
+                        <span>:</span>
+                        <span>
+                            {{ patient.chronic_condition or "None reported" }}
+                        </span>
+                    </div>
+
+                    <div class="back-row">
+                        <strong>Emergency Notes</strong>
+                        <span>:</span>
+                        <span>
+                            {{ patient.emergency_notes or "None" }}
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <!-- HOW IT WORKS -->
+                <div class="back-info-box how-box">
+
+                    <div class="box-title how-title">
+                        🛡 &nbsp; HOW IT WORKS?
+                    </div>
+
+
+                    <div class="how-row">
+                        <span class="number-circle">1</span>
+                        <span>This QR identifies you as a patient.</span>
+                    </div>
+
+                    <div class="how-row">
+                        <span class="number-circle">2</span>
+                        <span>A new OTP is generated for each consultation.</span>
+                    </div>
+
+                    <div class="how-row">
+                        <span class="number-circle">3</span>
+                        <span>Doctor access is temporary and patient-controlled.</span>
+                    </div>
+
+                    <div class="how-row">
+                        <span class="number-circle">4</span>
+                        <span>Medical records remain securely stored in OmniCare AI.</span>
+                    </div>
+
+                    <div class="how-row">
+                        <span class="number-circle">5</span>
+                        <span>You can revoke access at any time.</span>
+                    </div>
+
+                </div>
+
+
+                <!-- IMPORTANT SECURITY -->
+                <div class="back-info-box security-box">
+
+                    <div class="box-title security-title">
+                        ⚠ &nbsp; IMPORTANT
+                    </div>
+
+                    <ul>
+
+                        <li>
+                            This card does not contain your medical records.
+                        </li>
+
+                        <li>
+                            Medical records remain securely stored in OmniCare AI.
+                        </li>
+
+                        <li>
+                            QR access requires verification and OTP.
+                        </li>
+
+                        <li>
+                            Keep this card safe and do not share it unnecessarily.
+                        </li>
+
+                    </ul>
+
+                </div>
+
+            </div>
+
+
+            <!-- BACK FOOTER -->
+            <div class="card-footer back-footer">
+
+                OmniCare AI • Secure • Private • Patient Controlled
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- CARD LABELS -->
+    <div class="card-side-labels">
+
+        <span>FRONT SIDE</span>
+
+        <span>BACK SIDE</span>
+
+    </div>
+
+
+    <!-- SECURITY NOTE -->
+    <div class="health-card-note">
+
+        🔐
+        <div>
+            <strong>Your Health ID is private and secure.</strong>
+            <p>
+                The QR code only identifies your patient account.
+                Medical records are shared only after OTP verification
+                and temporary authorization.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

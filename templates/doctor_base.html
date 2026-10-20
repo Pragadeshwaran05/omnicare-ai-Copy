@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        Doctor Portal | OmniCare AI
+        {% endblock %}
+    </title>
+
+
+    <!-- =================================================
+         COMMON NAVIGATION CSS
+         ================================================= -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/common_nav.css') }}"
+    >
+
+
+    <!-- =================================================
+         DOCTOR SIDEBAR CSS
+         ================================================= -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/doctor_sidebar.css') }}"
+    >
+
+
+    <!-- =================================================
+         PAGE-SPECIFIC CSS
+         ================================================= -->
+
+    {% block extra_css %}
+    {% endblock %}
+
+
+    <!-- =================================================
+         BASE STYLE
+         ================================================= -->
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            padding: 0;
+
+            font-family:
+                "Segoe UI",
+                Arial,
+                sans-serif;
+
+            background: #f4f8f8;
+
+        }
+
+
+        /* =============================================
+           MAIN CONTENT
+           ============================================= */
+
+        .doctor-main {
+
+            margin-left: 271px;
+
+            min-height: 100vh;
+
+            background: #f4f8f8;
+
+        }
+
+
+        /* =============================================
+           MOBILE
+           ============================================= */
+
+        @media (max-width: 700px) {
+
+            .doctor-main {
+
+                margin-left: 0 !important;
+
+                padding-top: 58px;
+
+                padding-bottom: 75px;
+
+                min-height: 100vh;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+    <body>
+
+
+        <!-- =================================================
+            COMMON TOP BAR
+            ================================================= -->
+
+        <header class="common-topbar">
+
+            <!-- LEFT SIDE -->
+
+            <div class="common-topbar-left">
+
+
+                <!-- MOBILE MENU -->
+
+                <button
+                    type="button"
+                    class="common-topbar-menu"
+                    id="doctorMobileMenuBtn"
+                    aria-label="Open doctor menu"
+                    aria-expanded="false"
+                >
+
+                    ☰
+
+                </button>
+
+
+                <!-- LOGO -->
+
+                <div class="common-topbar-logo">
+
+                    OmniCare <span>AI</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- RIGHT SIDE -->
+
+        <div class="common-topbar-actions">
+
+        <span
+            class="common-topbar-action"
+            title="Notifications"
+            aria-label="Notifications"
+        >
+            🔔
+        </span>
+
+        <a
+            href="{{ url_for('doctor_profile') }}"
+            class="common-topbar-action"
+            title="Doctor Profile"
+            aria-label="Doctor Profile"
+        >
+            👤
+        </a>
+
+    </div>
+        </header>
+
+
+        <!-- =================================================
+            SIDEBAR OVERLAY
+            ================================================= -->
+
+        <div
+            class="doctor-sidebar-overlay common-sidebar-overlay"
+            id="doctorSidebarOverlay"
+        >
+        </div>
+
+
+        <!-- =================================================
+            DOCTOR SIDEBAR
+            ================================================= -->
+
+        <aside
+            class="doctor-sidebar"
+            id="doctorSidebar"
+        >
+
+
+            <!-- =============================================
+                LOGO
+                ============================================= -->
+
+            <div class="doctor-sidebar-brand">
+
+                <div class="doctor-brand-icon">
+                    +
+                </div>
+
+                <div class="doctor-brand-text">
+
+                    OmniCare <span>AI</span>
+
+                </div>
+
+            </div>
+
+
+            <!-- =============================================
+                SECTION TITLE
+                ============================================= -->
+
+            <div class="doctor-sidebar-section">
+
+                DOCTOR PORTAL
+
+            </div>
+
+
+            <!-- =============================================
+                MAIN NAVIGATION
+                ============================================= -->
+
+            <nav class="doctor-sidebar-nav">
+
+
+                <!-- DASHBOARD -->
+
+                <a
+                    href="{{ url_for('doctor_dashboard') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_dashboard' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        🏠
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Dashboard
+                    </span>
+
+                </a>
+
+
+                <!-- PATIENT ACCESS -->
+
+                <a
+                    href="{{ url_for('doctor_patient_access') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_patient_access' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        🔍
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Patient Access
+                    </span>
+
+                </a>
+                <!-- MY PATIENTS -->
+
+<a
+    href="{{ url_for('doctor_my_patients') }}"
+    class="doctor-sidebar-link
+    {% if request.endpoint == 'doctor_my_patients' %}
+    active
+    {% endif %}"
+>
+
+    <span class="doctor-nav-icon">
+        👥
+    </span>
+
+    <span class="doctor-nav-text">
+        My Patients
+    </span>
+
+</a>
+
+                <!-- GUEST PATIENT -->
+
+                <a
+                    href="{{ url_for('doctor_guest_patient') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_guest_patient' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        👤
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Guest Patient Record
+                    </span>
+
+                </a>
+
+
+                <!-- MEDICAL RECORDS -->
+
+                <a
+                    href="{{ url_for('doctor_shared_medical_records') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_shared_medical_records' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                     🗂️
+                    </span>
+
+                    <span class="doctor-nav-text">
+                      Shared Medical Records
+                    </span>
+
+                </a>
+
+
+                <!-- AI ASSISTANT -->
+
+                <a
+                    href="{{ url_for('doctor_ai_assistant') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_ai_assistant' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        🤖
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        AI Health Assistant
+                    </span>
+
+                </a>
+
+
+                <!-- CONSULTATION -->
+
+                <a
+                    href="{{ url_for('doctor_consultations') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_consultations' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        📝
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Consultation &amp; Prescription
+                    </span>
+
+                </a>
+
+
+                <!-- ACCESS & AUDIT -->
+
+                <a
+                    href="{{ url_for('doctor_access_audit') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_access_audit' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        🔐
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Access &amp; Audit
+                    </span>
+
+                </a>
+
+            </nav>
+
+
+            <!-- =============================================
+                SIDEBAR BOTTOM
+                ============================================= -->
+
+            <div class="doctor-sidebar-bottom">
+
+
+                <!-- PROFILE -->
+
+                <a
+                    href="{{ url_for('doctor_profile') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_profile' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        👤
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Profile
+                    </span>
+
+                </a>
+
+
+                <!-- SETTINGS -->
+
+                <a
+                    href="{{ url_for('doctor_settings') }}"
+                    class="doctor-sidebar-link
+                    {% if request.endpoint == 'doctor_settings' %}
+                    active
+                    {% endif %}"
+                >
+
+                    <span class="doctor-nav-icon">
+                        ⚙️
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Settings
+                    </span>
+
+                </a>
+
+
+                <!-- LOGOUT -->
+
+                <a
+                    href="{{ url_for('logout') }}"
+                    class="doctor-sidebar-link doctor-logout-link"
+                >
+
+                    <span class="doctor-nav-icon">
+                        🚪
+                    </span>
+
+                    <span class="doctor-nav-text">
+                        Logout
+                    </span>
+
+                </a>
+
+            </div>
+
+        </aside>
+
+
+        <!-- =================================================
+            MAIN CONTENT
+            ================================================= -->
+
+        <main class="doctor-main">
+
+            {% block content %}
+            {% endblock %}
+
+        </main>
+
+
+        <!-- =================================================
+            COMMON BOTTOM NAVIGATION
+            ================================================= -->
+
+        <nav class="common-bottom-bar">
+
+
+            <!-- HOME -->
+
+            <a
+                href="{{ url_for('doctor_dashboard') }}"
+                class="common-bottom-item
+                {% if request.endpoint == 'doctor_dashboard' %}
+                active
+                {% endif %}"
+            >
+
+                <span class="common-bottom-icon">
+                    🏠
+                </span>
+
+                <span class="common-bottom-text">
+                    Home
+                </span>
+
+            </a>
+
+
+            <!-- PATIENTS -->
+
+            <a
+                href="{{ url_for('doctor_access') }}"
+                class="common-bottom-item
+                {% if request.endpoint == 'doctor_access' %}
+                active
+                {% endif %}"
+            >
+
+                <span class="common-bottom-icon">
+                    👥
+                </span>
+
+                <span class="common-bottom-text">
+                    Patients
+                </span>
+
+            </a>
+
+
+            <!-- RECORDS -->
+
+            <a
+                href="{{ url_for('doctor_medical_records') }}"
+                class="common-bottom-item
+                {% if request.endpoint == 'doctor_medical_records' %}
+                active
+                {% endif %}"
+            >
+
+                <span class="common-bottom-icon">
+                    📋
+                </span>
+
+                <span class="common-bottom-text">
+                    Records
+                </span>
+
+            </a>
+
+
+            <!-- AI -->
+
+            <a
+                href="{{ url_for('doctor_ai_assistant') }}"
+                class="common-bottom-item
+                {% if request.endpoint == 'doctor_ai_assistant' %}
+                active
+                {% endif %}"
+            >
+
+                <span class="common-bottom-icon">
+                    🤖
+                </span>
+
+                <span class="common-bottom-text">
+                    AI
+                </span>
+
+            </a>
+
+
+            <!-- PROFILE -->
+
+            <a
+                href="{{ url_for('doctor_profile') }}"
+                class="common-bottom-item
+                {% if request.endpoint == 'doctor_profile' %}
+                active
+                {% endif %}"
+            >
+
+                <span class="common-bottom-icon">
+                    👤
+                </span>
+
+                <span class="common-bottom-text">
+                    Profile
+                </span>
+
+            </a>
+
+        </nav>
+
+
+        <!-- =================================================
+            JAVASCRIPT
+            ================================================= -->
+
+        <script>
+
+            document.addEventListener(
+                "DOMContentLoaded",
+                function () {
+
+
+                    const menuBtn =
+                        document.getElementById(
+                            "doctorMobileMenuBtn"
+                        );
+
+
+                    const sidebar =
+                        document.getElementById(
+                            "doctorSidebar"
+                        );
+
+
+                    const overlay =
+                        document.getElementById(
+                            "doctorSidebarOverlay"
+                        );
+
+
+                    if (
+                        !menuBtn ||
+                        !sidebar ||
+                        !overlay
+                    ) {
+                        return;
+                    }
+
+
+                    /* =====================================
+                    OPEN / CLOSE SIDEBAR
+                    ===================================== */
+
+                    menuBtn.addEventListener(
+                        "click",
+                        function () {
+
+                            const isOpen =
+                                sidebar.classList.contains(
+                                    "open"
+                                );
+
+
+                            if (isOpen) {
+
+                                sidebar.classList.remove(
+                                    "open"
+                                );
+
+                                overlay.classList.remove(
+                                    "active"
+                                );
+
+                                menuBtn.setAttribute(
+                                    "aria-expanded",
+                                    "false"
+                                );
+
+                            } else {
+
+                                sidebar.classList.add(
+                                    "open"
+                                );
+
+                                overlay.classList.add(
+                                    "active"
+                                );
+
+                                menuBtn.setAttribute(
+                                    "aria-expanded",
+                                    "true"
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /* =====================================
+                    OVERLAY CLOSE
+                    ===================================== */
+
+                    overlay.addEventListener(
+                        "click",
+                        function () {
+
+                            sidebar.classList.remove(
+                                "open"
+                            );
+
+                            overlay.classList.remove(
+                                "active"
+                            );
+
+                            menuBtn.setAttribute(
+                                "aria-expanded",
+                                "false"
+                            );
+
+                        }
+                    );
+
+
+                    /* =====================================
+                    CLOSE AFTER CLICKING SIDEBAR LINK
+                    ===================================== */
+
+                    const sidebarLinks =
+                        sidebar.querySelectorAll("a");
+
+
+                    sidebarLinks.forEach(
+                        function (link) {
+
+                            link.addEventListener(
+                                "click",
+                                function () {
+
+                                    sidebar.classList.remove(
+                                        "open"
+                                    );
+
+                                    overlay.classList.remove(
+                                        "active"
+                                    );
+
+                                    menuBtn.setAttribute(
+                                        "aria-expanded",
+                                        "false"
+                                    );
+
+                                }
+                            );
+
+                        }
+                    );
+
+
+                    /* =====================================
+                    ESCAPE KEY
+                    ===================================== */
+
+                    document.addEventListener(
+                        "keydown",
+                        function (event) {
+
+                            if (
+                                event.key === "Escape"
+                            ) {
+
+                                sidebar.classList.remove(
+                                    "open"
+                                );
+
+                                overlay.classList.remove(
+                                    "active"
+                                );
+
+                                menuBtn.setAttribute(
+                                    "aria-expanded",
+                                    "false"
+                                );
+
+                            }
+
+                        }
+                    );
+
+
+                    /* =====================================
+                    DESKTOP RESIZE
+                    ===================================== */
+
+                    window.addEventListener(
+                        "resize",
+                        function () {
+
+                            if (
+                                window.innerWidth > 700
+                            ) {
+
+                                sidebar.classList.remove(
+                                    "open"
+                                );
+
+                                overlay.classList.remove(
+                                    "active"
+                                );
+
+                                menuBtn.setAttribute(
+                                    "aria-expanded",
+                                    "false"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+        </script>
+
+
+    </body>
+
+    </html>

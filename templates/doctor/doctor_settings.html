@@ -1,0 +1,21 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}Settings - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Account Settings</h1>
+            <p>Manage portal preferences, security, and notification settings.</p>
+        </div>
+    </div>
+    <div class="empty-patients">
+        <div class="empty-icon">⚙️</div>
+        <h3>Doctor Settings</h3>
+        <p>Security and notification controls.</p>
+        <a href="{{ url_for('doctor_dashboard') }}" class="primary-button">Back to Dashboard</a>
+    </div>
+</div>
+{% endblock %}

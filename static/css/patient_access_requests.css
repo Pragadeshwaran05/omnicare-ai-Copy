@@ -1,0 +1,1316 @@
+/* =========================================
+   OmniCare AI - Patient Access Requests
+   ========================================= */
+
+
+/* =========================================
+   PAGE CONTAINER
+   ========================================= */
+
+.access-requests-page {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 35px 30px 60px;
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   PAGE HEADER
+   ========================================= */
+
+.access-requests-page .page-header {
+    margin-bottom: 30px;
+}
+
+.access-requests-page .page-header h1 {
+    margin: 0;
+    color: #123f63;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.access-requests-page .page-header p {
+    margin: 8px 0 0;
+    color: #6c8498;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   ERROR MESSAGE
+   ========================================= */
+
+.error-message {
+    margin-bottom: 22px;
+    padding: 15px 18px;
+
+    background: #fff3f3;
+    border: 1px solid #efc2c2;
+    border-radius: 12px;
+
+    color: #a83c3c;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+
+/* =========================================
+   REQUEST LIST
+   ========================================= */
+
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+
+/* =========================================
+   ACCESS REQUEST CARD
+   ========================================= */
+
+.access-request-card {
+    background: #ffffff;
+
+    border: 1px solid #dce7ee;
+    border-radius: 18px;
+
+    padding: 26px;
+
+    box-shadow:
+        0 7px 24px rgba(21, 67, 96, 0.07);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.access-request-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px rgba(21, 67, 96, 0.11);
+}
+
+
+/* =========================================
+   REQUEST TOP
+   ========================================= */
+
+.request-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+
+/* Doctor Icon */
+
+.doctor-icon {
+    width: 56px;
+    height: 56px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 15px;
+    background: #edf8f7;
+
+    font-size: 27px;
+}
+
+
+/* Request Information */
+
+.request-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.request-info h3 {
+    margin: 2px 0 6px;
+
+    color: #123f63;
+
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.request-info p {
+    margin: 0;
+
+    color: #6d8497;
+
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   STATUS BADGE
+   ========================================= */
+
+.request-status {
+    flex-shrink: 0;
+
+    padding: 7px 14px;
+
+    border-radius: 30px;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    text-transform: capitalize;
+}
+
+
+/* Pending */
+
+.request-status.pending {
+    background: #fff7df;
+    border: 1px solid #efd58f;
+    color: #9a6b00;
+}
+
+
+/* Active */
+
+.request-status.active {
+    background: #eaf8f0;
+    border: 1px solid #b4dfc6;
+    color: #177548;
+}
+
+
+/* Rejected */
+
+.request-status.rejected {
+    background: #fff1f1;
+    border: 1px solid #eabcbc;
+    color: #ae3d3d;
+}
+
+
+/* Revoked */
+
+.request-status.revoked {
+    background: #f2f3f5;
+    border: 1px solid #d5d9de;
+    color: #68737d;
+}
+
+
+/* =========================================
+   REQUEST DETAILS
+   ========================================= */
+
+.access-request-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 15px;
+
+    margin-top: 24px;
+    padding: 18px;
+
+    background: #f7fafc;
+
+    border: 1px solid #e3ebf0;
+    border-radius: 13px;
+
+    box-sizing: border-box;
+}
+
+
+/* Detail Item */
+
+/* =========================================
+   DETAIL ITEM
+   ========================================= */
+
+.access-detail-item {
+    display: flex !important;
+    flex-direction: column !important;
+
+    gap: 6px !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+
+    box-sizing: border-box !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* Detail Label */
+
+/* =========================================
+   DETAIL LABEL
+   ========================================= */
+
+.access-detail-label {
+    display: block !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #8095a6 !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    line-height: 1.4 !important;
+    letter-spacing: 0.7px;
+
+    text-transform: uppercase;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+/* Detail Value */
+/* =========================================
+   DETAIL VALUE - FORCE VISIBLE
+   ========================================= */
+
+.access-detail-value {
+    display: block !important;
+
+    width: 100% !important;
+    height: auto !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #123f63 !important;
+    background: transparent !important;
+
+    font-family: inherit !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+
+    line-height: 1.6 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+}
+
+/* Make sure anything inside the value is visible */
+.access-detail-value * {
+    color: #123f63 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================
+   PERMISSION REQUIRED
+   ========================================= */
+
+.request-message {
+    margin-top: 20px;
+    padding: 17px 18px;
+
+    background: #f6f1ff;
+
+    border: 1px solid #ded2ff;
+    border-radius: 13px;
+}
+
+
+/* Heading */
+
+.request-message strong {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: #40278a;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+
+/* Text */
+
+.request-message p {
+    margin: 0;
+
+    color: #6d6090;
+
+    font-size: 14px;
+    line-height: 1.65;
+}
+
+
+/* =========================================
+   ACTION BUTTONS
+   ========================================= */
+
+.request-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+
+    gap: 13px;
+
+    margin-top: 22px;
+}
+
+
+/* Form */
+
+.request-actions form {
+    margin: 0;
+}
+
+
+/* Common Button */
+
+.request-actions button {
+    width: 100%;
+    min-height: 47px;
+
+    padding: 12px 18px;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+/* =========================================
+   ALLOW BUTTON
+   ========================================= */
+
+.allow-btn {
+    background: #16804b;
+    border: 1px solid #16804b;
+    color: #ffffff;
+}
+
+.allow-btn:hover {
+    background: #116b3e;
+    border-color: #116b3e;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   REJECT BUTTON
+   ========================================= */
+
+.reject-btn {
+    background: #ffffff;
+
+    border: 1px solid #dfb5b5;
+
+    color: #b13e3e;
+}
+
+.reject-btn:hover {
+    background: #fff3f3;
+    border-color: #d79292;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   ACTIVE MESSAGE
+   ========================================= */
+
+.active-message {
+    margin-top: 20px;
+    padding: 15px 17px;
+
+    background: #eaf8f0;
+
+    border: 1px solid #b8dfc8;
+    border-radius: 11px;
+
+    color: #176b43;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   REJECTED MESSAGE
+   ========================================= */
+
+.rejected-message {
+    margin-top: 20px;
+    padding: 15px 17px;
+
+    background: #fff2f2;
+
+    border: 1px solid #e7c0c0;
+    border-radius: 11px;
+
+    color: #a63d3d;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   EMPTY STATE
+   ========================================= */
+
+.empty-state {
+    background: #ffffff;
+
+    border: 1px solid #dce7ee;
+    border-radius: 18px;
+
+    padding: 60px 30px;
+
+    text-align: center;
+
+    box-shadow:
+        0 7px 24px rgba(21, 67, 96, 0.06);
+}
+
+.empty-icon {
+    width: 70px;
+    height: 70px;
+
+    margin: 0 auto 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #edf8f7;
+
+    font-size: 30px;
+}
+
+.empty-state h2 {
+    margin: 0 0 8px;
+
+    color: #123f63;
+
+    font-size: 21px;
+    font-weight: 800;
+}
+
+.empty-state p {
+    margin: 0;
+
+    color: #718798;
+
+    font-size: 15px;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 800px) {
+
+    .access-requests-page {
+        padding: 30px 20px 50px;
+    }
+
+    .access-requests-page .page-header h1 {
+        font-size: 29px;
+    }
+
+    .access-request-card {
+        padding: 22px;
+    }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 650px) {
+
+    .access-requests-page {
+        width: 100%;
+        padding: 24px 15px 40px;
+        box-sizing: border-box;
+    }
+
+    .access-requests-page .page-header {
+        margin-bottom: 22px;
+    }
+
+    .access-requests-page .page-header h1 {
+        font-size: 26px;
+    }
+
+    .access-requests-page .page-header p {
+        font-size: 14px;
+    }
+
+    .access-request-card {
+        width: 100%;
+        padding: 18px;
+        border-radius: 15px;
+        box-sizing: border-box;
+    }
+
+    .request-top {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 13px;
+    }
+
+    .request-info h3 {
+        font-size: 18px;
+    }
+
+    .request-info p {
+        font-size: 13px;
+    }
+
+    .request-status {
+        grid-column: 2;
+        justify-self: start;
+        margin-top: -4px;
+    }
+
+
+    /* Mobile Details */
+
+    .access-request-details {
+        display: flex;
+        flex-direction: column;
+
+        width: 100%;
+        height: auto;
+
+        gap: 17px;
+
+        margin-top: 20px;
+        padding: 16px;
+
+        box-sizing: border-box;
+    }
+
+    .access-detail-item {
+        display: flex;
+        flex-direction: column;
+
+        width: 100%;
+        min-width: 0;
+
+        gap: 5px;
+
+        box-sizing: border-box;
+    }
+
+    .access-detail-label {
+        font-size: 10px;
+        line-height: 1.4;
+    }
+
+    .access-detail-value {
+        width: 100%;
+        height: auto;
+
+        font-size: 14px;
+        line-height: 1.5;
+
+        white-space: normal;
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+
+
+    /* Mobile Buttons */
+
+    .request-actions {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .request-actions button {
+        min-height: 45px;
+    }
+}
+
+
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 400px) {
+
+    .access-requests-page {
+        padding: 20px 12px 35px;
+    }
+
+    .access-requests-page .page-header h1 {
+        font-size: 23px;
+    }
+
+    .access-request-card {
+        padding: 15px;
+    }
+
+    .doctor-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 23px;
+    }
+
+    .request-info h3 {
+        font-size: 17px;
+    }
+
+    .request-message {
+        padding: 14px;
+    }
+
+    .request-message p {
+        font-size: 13px;
+    }
+
+    .access-request-details {
+        padding: 14px;
+        gap: 16px;
+    }
+
+    .access-detail-value {
+        font-size: 13px;
+    }
+}
+/* =========================================================
+   ACCESS APPROVAL OPTIONS
+   ========================================================= */
+
+.approval-form {
+    width: 100%;
+}
+
+
+/* Access options container */
+
+.access-options-panel {
+    width: 100%;
+    margin-top: 16px;
+    padding: 24px;
+    box-sizing: border-box;
+
+    background: #ffffff;
+    border: 1px solid #dbe7ef;
+    border-radius: 16px;
+
+    box-shadow: 0 8px 24px rgba(28, 78, 108, 0.08);
+}
+
+
+/* Header */
+
+.access-options-header {
+    margin-bottom: 20px;
+}
+
+.access-options-header h3 {
+    margin: 0 0 8px;
+
+    color: #173f63;
+    font-size: 22px;
+    font-weight: 800;
+
+    line-height: 1.3;
+}
+
+.access-options-header p {
+    margin: 0;
+
+    color: #66829a;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+
+/* Individual option */
+
+.access-option {
+    position: relative;
+
+    display: flex;
+    align-items: flex-start;
+
+    width: 100%;
+    min-height: 72px;
+
+    margin-bottom: 12px;
+    padding: 16px 18px;
+
+    box-sizing: border-box;
+
+    background: #f8fbfd;
+
+    border: 1px solid #dce8ef;
+    border-radius: 13px;
+
+    cursor: pointer;
+
+    transition:
+        border-color 0.2s ease,
+        background 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+/* Hide browser radio */
+
+.access-option input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+
+/* Custom radio */
+
+.access-radio {
+    position: relative;
+
+    flex: 0 0 auto;
+
+    width: 20px;
+    height: 20px;
+
+    margin-top: 2px;
+    margin-right: 14px;
+
+    box-sizing: border-box;
+
+    border: 2px solid #9db2c1;
+    border-radius: 50%;
+
+    background: #ffffff;
+
+    transition: all 0.2s ease;
+}
+
+
+/* Selected radio */
+
+.access-option input[type="radio"]:checked
++ .access-radio {
+    border-color: #168b83;
+}
+
+
+/* Selected radio inner dot */
+
+.access-option input[type="radio"]:checked
++ .access-radio::after {
+    content: "";
+
+    position: absolute;
+
+    top: 50%;
+    left: 50%;
+
+    width: 9px;
+    height: 9px;
+
+    transform: translate(-50%, -50%);
+
+    background: #168b83;
+
+    border-radius: 50%;
+}
+
+
+/* Selected option card */
+
+.access-option:has(input[type="radio"]:checked) {
+    background: #f0faf8;
+
+    border-color: #62bdb4;
+
+    box-shadow: 0 4px 14px rgba(22, 139, 131, 0.08);
+}
+
+
+/* Option content */
+
+.access-option-content {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+
+    flex: 1;
+}
+
+
+.access-option-content strong {
+    display: block;
+
+    margin: 0 0 5px;
+
+    color: #173f63;
+
+    font-size: 15px;
+    font-weight: 800;
+
+    line-height: 1.4;
+}
+
+
+.access-option-content small {
+    display: block;
+
+    margin: 0;
+
+    color: #6c8498;
+
+    font-size: 13px;
+
+    line-height: 1.55;
+}
+
+
+/* Hover */
+
+.access-option:hover {
+    border-color: #76bdb7;
+
+    background: #f5fbfa;
+}
+
+
+/* Confirm button */
+
+.confirm-access-btn {
+    width: 100%;
+
+    min-height: 48px;
+
+    margin-top: 8px;
+    padding: 12px 20px;
+
+    border: none;
+    border-radius: 11px;
+
+    background: #168b83;
+
+    color: #ffffff;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.confirm-access-btn:hover {
+    background: #11756e;
+
+    box-shadow: 0 6px 16px rgba(22, 139, 131, 0.20);
+
+    transform: translateY(-1px);
+}
+
+
+.confirm-access-btn:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .access-options-panel {
+        margin-top: 14px;
+        padding: 18px;
+
+        border-radius: 14px;
+    }
+
+
+    .access-options-header h3 {
+        font-size: 19px;
+    }
+
+
+    .access-options-header p {
+        font-size: 13px;
+    }
+
+
+    .access-option {
+        min-height: auto;
+
+        padding: 14px;
+    }
+
+
+    .access-radio {
+        width: 19px;
+        height: 19px;
+
+        margin-right: 11px;
+    }
+
+
+    .access-option-content strong {
+        font-size: 14px;
+    }
+
+
+    .access-option-content small {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+
+    .confirm-access-btn {
+        min-height: 46px;
+
+        font-size: 13px;
+    }
+
+}
+/* =========================================================
+   ACTIVE ACCESS
+   ========================================================= */
+
+.active-message {
+    width: 100%;
+    margin-top: 24px;
+    padding: 22px;
+    box-sizing: border-box;
+
+    background: #eefaf3;
+    border: 1px solid #b9e3ca;
+    border-radius: 14px;
+
+    color: #176b43;
+}
+
+.active-message strong {
+    display: block;
+
+    margin-bottom: 10px;
+
+    color: #167044;
+    font-size: 17px;
+    font-weight: 800;
+}
+
+.active-message p {
+    margin: 0 0 14px;
+
+    color: #557fa4;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+
+/* Access type */
+
+.active-access-type {
+    display: inline-flex;
+    align-items: center;
+
+    margin-top: 2px;
+    padding: 7px 12px;
+
+    background: #ffffff;
+
+    border: 1px solid #b9dfc8;
+    border-radius: 20px;
+
+    color: #176b43;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   REVOKE ACCESS
+   ========================================================= */
+.revoke-access-area {
+    width: 100%;
+    margin-top: 16px;
+    padding-top: 16px;
+
+    border-top: 1px solid #e7edf1;
+
+    box-sizing: border-box;
+}
+
+
+.revoke-access-area form {
+    width: 100%;
+    margin: 0;
+}
+
+
+.revoke-access-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    width: 100%;
+    min-height: 46px;
+
+    padding: 11px 18px;
+
+    box-sizing: border-box;
+
+    border: 1px solid #e3b0b0;
+    border-radius: 10px;
+
+    background: #fff7f7;
+
+    color: #b23b3b;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.revoke-access-btn:hover {
+    background: #fff0f0;
+
+    border-color: #d98d8d;
+
+    color: #a72f2f;
+
+    box-shadow: 0 4px 12px rgba(178, 59, 59, 0.10);
+
+    transform: translateY(-1px);
+}
+
+
+.revoke-access-btn:active {
+    transform: translateY(0);
+}
+
+
+.revoke-access-area > p {
+    margin: 8px 0 0;
+
+    color: #72899b;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 650px) {
+
+    .active-message {
+        padding: 17px;
+        margin-top: 18px;
+    }
+
+
+    .active-message strong {
+        font-size: 15px;
+    }
+
+
+    .active-message p {
+        font-size: 13px;
+    }
+
+
+    .active-access-type {
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+
+    .revoke-access-area {
+        margin-top: 14px;
+        padding-top: 14px;
+    }
+
+
+    .revoke-access-btn {
+        width: 100%;
+        min-height: 45px;
+        font-size: 13px;
+    }
+
+}
+/* =========================================
+   FINAL VISIBILITY OVERRIDE
+   ========================================= */
+
+.access-request-card .access-request-details,
+.access-request-card .access-detail-item,
+.access-request-card .access-detail-label,
+.access-request-card .access-detail-value {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.access-request-card .access-detail-value {
+    color: #123f63 !important;
+}
+/* =========================================================
+   FINAL REQUEST DETAILS VISIBILITY
+   ========================================================= */
+
+.access-request-card .access-request-details {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 20px !important;
+
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    background: #f7fafc !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+.access-request-card .access-detail-item {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 7px !important;
+
+    width: 100% !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+.access-request-card .access-detail-label {
+    display: block !important;
+
+    color: #8095a6 !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+.access-request-card .access-detail-value {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+
+    width: 100% !important;
+
+    color: #123f63 !important;
+
+    font-size: 15px !important;
+    font-weight: 600 !important;
+
+    line-height: 1.5 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+.access-request-card .access-detail-value strong {
+    display: inline !important;
+
+    color: #123f63 !important;
+
+    font-size: 15px !important;
+    font-weight: 700 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+.access-request-card .detail-icon {
+    display: inline-flex !important;
+
+    flex-shrink: 0;
+
+    font-size: 16px !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+
+@media (max-width: 650px) {
+
+    .access-request-card .access-request-details {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 17px !important;
+    }
+
+    .access-request-card .access-detail-value {
+        font-size: 14px !important;
+    }
+
+    .access-request-card .access-detail-value strong {
+        font-size: 14px !important;
+    }
+}

@@ -1,0 +1,970 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        {% block title %}
+        OmniCare AI
+        {% endblock %}
+    </title>
+
+
+    <!-- =========================
+         EXISTING CSS
+         ========================= -->
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                  filename='css/patient_sidebar.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                  filename='css/patient_upload_records.css') }}">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                  filename='css/patient_health_records.css') }}">
+
+
+    {% block extra_css %}
+    {% endblock %}
+
+
+    <!-- =========================
+         MOBILE APP BAR CSS
+         ========================= -->
+
+    <style>
+
+        /* =========================================
+           MOBILE TOP BAR
+           ========================================= */
+
+        .mobile-top-bar {
+
+            display: none;
+
+        }
+
+
+        /* =========================================
+           MOBILE BOTTOM NAVIGATION
+           ========================================= */
+
+        .mobile-bottom-nav {
+
+            display: none;
+
+        }
+
+
+        /* =========================================
+           MOBILE ONLY
+           ========================================= */
+
+        @media (max-width: 768px) {
+
+
+            /* -------------------------------------
+               TOP BAR
+               ------------------------------------- */
+
+            .mobile-top-bar {
+
+                position: fixed;
+
+                top: 0;
+                left: 0;
+                right: 0;
+
+                height: 64px;
+
+                display: flex;
+
+                align-items: center;
+
+                justify-content: space-between;
+
+                padding: 0 16px;
+
+                background: #0F9FA3;
+
+                box-shadow:
+                    0 3px 12px
+                    rgba(0, 0, 0, 0.12);
+
+                z-index: 900;
+
+            }
+
+
+            /* -------------------------------------
+               TOP BAR LEFT
+               ------------------------------------- */
+
+            .mobile-top-left {
+
+                display: flex;
+
+                align-items: center;
+
+                gap: 10px;
+
+            }
+
+
+            /* -------------------------------------
+               HAMBURGER
+               ------------------------------------- */
+
+            .mobile-menu-button {
+
+                width: 40px;
+                height: 40px;
+
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+
+                border: none;
+
+                border-radius: 10px;
+
+                background: rgba(255,255,255,0.15);
+
+                color: white;
+
+                font-size: 22px;
+
+                cursor: pointer;
+
+                padding: 0;
+
+            }
+
+
+            .mobile-menu-button:hover {
+
+                background:
+                    rgba(255,255,255,0.25);
+
+            }
+
+
+            /* -------------------------------------
+               APP LOGO
+               ------------------------------------- */
+
+            .mobile-app-name {
+
+                color: white;
+
+                font-size: 18px;
+
+                font-weight: 800;
+
+                letter-spacing: -0.4px;
+
+                white-space: nowrap;
+                   margin-left: 48px;
+
+    position: relative;
+
+    z-index: 1100;  
+
+            }
+
+
+            .mobile-app-name span {
+
+                color: #7DE4E5;
+
+            }
+
+
+            /* -------------------------------------
+               TOP RIGHT ICONS
+               ------------------------------------- */
+
+            .mobile-top-actions {
+
+                display: flex;
+
+                align-items: center;
+
+                gap: 8px;
+
+            }
+
+
+            .mobile-top-action {
+
+                width: 34px;
+                height: 34px;
+
+                display: flex;
+
+                align-items: center;
+                justify-content: center;
+
+                border-radius: 50%;
+
+                background:
+                    rgba(255,255,255,0.14);
+
+                color: white;
+
+                text-decoration: none;
+
+                font-size: 16px;
+
+            }
+
+
+            /* =====================================
+               MAIN CONTENT SPACE
+               ===================================== */
+
+            .patient-main {
+
+                padding-top: 82px;
+
+                padding-bottom: 90px;
+
+                min-height: 100vh;
+
+            }
+
+
+            /* =====================================
+               BOTTOM NAVIGATION
+               ===================================== */
+
+            .mobile-bottom-nav {
+
+                position: fixed;
+
+                left: 0;
+                right: 0;
+                bottom: 0;
+
+                height: 68px;
+
+                display: flex;
+
+                align-items: center;
+
+                justify-content: space-around;
+
+                background: white;
+
+                border-top:
+                    1px solid #DCEDEE;
+
+                box-shadow:
+                    0 -4px 18px
+                    rgba(16, 42, 67, 0.08);
+
+                z-index: 900;
+
+                padding:
+                    5px 4px
+                    env(safe-area-inset-bottom);
+
+            }
+
+
+            /* -------------------------------------
+               BOTTOM NAV ITEM
+               ------------------------------------- */
+
+            .mobile-bottom-link {
+
+                flex: 1;
+
+                height: 58px;
+
+                display: flex;
+
+                flex-direction: column;
+
+                align-items: center;
+
+                justify-content: center;
+
+                gap: 3px;
+
+                color: #7890A0;
+
+                text-decoration: none;
+
+                font-size: 10px;
+
+                font-weight: 700;
+
+                border-radius: 10px;
+
+                transition: .2s ease;
+
+            }
+
+
+            .mobile-bottom-link .bottom-icon {
+
+                font-size: 19px;
+
+                line-height: 1;
+
+            }
+
+
+            /* -------------------------------------
+               ACTIVE ITEM
+               ------------------------------------- */
+
+            .mobile-bottom-link.active {
+
+                color: #0F9FA3;
+
+                background: #E7F8F8;
+
+            }
+
+
+            .mobile-bottom-link:active {
+
+                transform: scale(.96);
+
+            }
+
+
+            /* =====================================
+               SIDEBAR MOBILE POSITION
+               ===================================== */
+
+            .patient-sidebar {
+
+                z-index: 1000;
+
+            }
+
+
+            /* =====================================
+               MOBILE MENU BUTTON
+               ===================================== */
+
+            .mobile-menu-button {
+ position: fixed;
+
+    top: 12px;
+
+    left: 14px;
+
+    width: 40px;
+    height: 40px;
+
+    z-index: 1100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+            }
+
+        }
+
+
+        /* =========================================
+           DESKTOP
+           ========================================= */
+
+        @media (min-width: 769px) {
+
+            .mobile-top-bar,
+            .mobile-bottom-nav {
+
+                display: none !important;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- =================================================
+     MOBILE TOP APP BAR
+     ================================================= -->
+
+<header class="mobile-top-bar">
+
+
+    <!-- LEFT -->
+
+    <div class="mobile-top-left">
+
+
+        <!-- HAMBURGER -->
+
+        <button
+            class="mobile-menu-button"
+            onclick="toggleSidebar()"
+            aria-label="Open menu">
+
+            ☰
+
+        </button>
+
+
+        <!-- APP NAME -->
+
+        <div class="mobile-app-name">
+
+            OmniCare <span>AI</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- RIGHT -->
+
+    <div class="mobile-top-actions">
+
+
+        <!-- Notifications -->
+
+        <a
+            href="#"
+            class="mobile-top-action"
+            aria-label="Notifications">
+
+            🔔
+
+        </a>
+
+
+        <!-- Profile -->
+
+        <a
+            href="{{ url_for('patient_profile') }}"
+            class="mobile-top-action"
+            aria-label="Profile">
+
+            👤
+
+        </a>
+
+    </div>
+
+
+</header>
+
+
+
+<!-- =================================================
+     PATIENT SIDEBAR
+     ================================================= -->
+
+<aside
+    class="patient-sidebar"
+    id="patientSidebar">
+
+
+    <!-- LOGO -->
+
+    <div class="sidebar-logo">
+
+        <div class="logo-icon">
+            +
+        </div>
+
+        <div class="logo-text">
+
+            OmniCare <span>AI</span>
+
+        </div>
+
+    </div>
+
+
+    <!-- SECTION -->
+
+    <div class="sidebar-section-title">
+
+        Patient
+
+    </div>
+
+
+    <!-- NAVIGATION -->
+
+    <nav class="sidebar-nav">
+
+
+        <!-- DASHBOARD -->
+
+        <a
+            href="{{ url_for('patient_dashboard') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_dashboard' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                🏠
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+
+        <!-- HEALTH RECORDS -->
+
+        <a
+            href="{{ url_for('patient_health_records') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_health_records' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                📋
+            </span>
+
+            <span>
+                My Health Records
+            </span>
+
+        </a>
+
+
+        <!-- UPLOAD RECORDS -->
+
+        <a
+            href="{{ url_for('patient_upload_records') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_upload_records' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                📤
+            </span>
+
+            <span>
+                Upload Records
+            </span>
+
+        </a>
+
+
+        <!-- HEALTH TIMELINE -->
+
+        <a
+            href="{{ url_for('health_timeline') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'health_timeline' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                📅
+            </span>
+
+            <span>
+                Health Timeline
+            </span>
+
+        </a>
+
+
+        <!-- DOCTOR ACCESS -->
+
+        <a
+            href="{{ url_for('patient_doctor_access') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_doctor_access' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                🔐
+            </span>
+
+            <span>
+                Doctor Access
+            </span>
+
+        </a>
+
+
+        <!-- PROFILE -->
+
+        <a
+            href="{{ url_for('patient_profile') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_profile' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                👤
+            </span>
+
+            <span>
+                Profile & Emergency
+            </span>
+
+        </a>
+
+
+        <!-- QR HEALTH ID -->
+
+        <a
+            href="{{ url_for('patient_health_card') }}"
+            class="sidebar-link
+            {% if request.endpoint == 'patient_health_card' %}
+            active
+            {% endif %}">
+
+            <span class="nav-icon">
+                📱
+            </span>
+
+            <span>
+                QR / Health ID
+            </span>
+
+        </a>
+
+
+    </nav>
+
+
+    <!-- SIDEBAR BOTTOM -->
+
+    <div class="sidebar-bottom">
+
+
+        <!-- SETTINGS -->
+
+        <a
+            href="#"
+            class="sidebar-link">
+
+            <span class="nav-icon">
+                ⚙️
+            </span>
+
+            <span>
+                Settings
+            </span>
+
+        </a>
+
+
+        <!-- LOGOUT -->
+
+        <a
+            href="{{ url_for('logout') }}"
+            class="sidebar-link logout">
+
+            <span class="nav-icon">
+                🚪
+            </span>
+
+            <span>
+                Logout
+            </span>
+
+        </a>
+
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =================================================
+     MAIN CONTENT
+     ================================================= -->
+
+<main class="patient-main">
+
+
+    {% block content %}
+
+    {% endblock %}
+
+
+</main>
+
+
+
+<!-- =================================================
+     MOBILE BOTTOM NAVIGATION
+     ================================================= -->
+
+<nav class="mobile-bottom-nav">
+
+
+    <!-- DASHBOARD -->
+
+    <a
+        href="{{ url_for('patient_dashboard') }}"
+        class="mobile-bottom-link
+        {% if request.endpoint == 'patient_dashboard' %}
+        active
+        {% endif %}">
+
+        <span class="bottom-icon">
+            🏠
+        </span>
+
+        <span>
+            Home
+        </span>
+
+    </a>
+
+
+    <!-- HEALTH RECORDS -->
+
+    <a
+        href="{{ url_for('patient_health_records') }}"
+        class="mobile-bottom-link
+        {% if request.endpoint == 'patient_health_records' %}
+        active
+        {% endif %}">
+
+        <span class="bottom-icon">
+            📋
+        </span>
+
+        <span>
+            Records
+        </span>
+
+    </a>
+
+
+    <!-- UPLOAD -->
+
+    <a
+        href="{{ url_for('patient_upload_records') }}"
+        class="mobile-bottom-link
+        {% if request.endpoint == 'patient_upload_records' %}
+        active
+        {% endif %}">
+
+        <span class="bottom-icon">
+            📤
+        </span>
+
+        <span>
+            Upload
+        </span>
+
+    </a>
+
+
+    <!-- DOCTOR ACCESS -->
+
+    <a
+        href="{{ url_for('patient_doctor_access') }}"
+        class="mobile-bottom-link
+        {% if request.endpoint == 'patient_doctor_access' %}
+        active
+        {% endif %}">
+
+        <span class="bottom-icon">
+            🔐
+        </span>
+
+        <span>
+            Doctor
+        </span>
+
+    </a>
+
+
+    <!-- PROFILE -->
+
+    <a
+        href="{{ url_for('patient_profile') }}"
+        class="mobile-bottom-link
+        {% if request.endpoint == 'patient_profile' %}
+        active
+        {% endif %}">
+
+        <span class="bottom-icon">
+            👤
+        </span>
+
+        <span>
+            Profile
+        </span>
+
+    </a>
+
+
+</nav>
+
+
+
+<!-- =================================================
+     SIDEBAR JAVASCRIPT
+     ================================================= -->
+
+<script>
+
+function toggleSidebar() {
+
+    const sidebar =
+        document.getElementById("patientSidebar");
+
+    const menuButton =
+        document.querySelector(".mobile-menu-button");
+
+
+    if (!sidebar) return;
+
+
+    sidebar.classList.toggle("open");
+
+
+    if (sidebar.classList.contains("open")) {
+
+        /*
+         * Hide hamburger when sidebar is open
+         */
+
+        if (menuButton) {
+
+            menuButton.style.display = "none";
+
+        }
+
+    }
+
+    else {
+
+        /*
+         * Show hamburger when sidebar is closed
+         */
+
+        if (menuButton) {
+
+            menuButton.style.display = "flex";
+
+        }
+
+    }
+
+}
+
+
+
+/* =========================================
+   CLOSE SIDEBAR WHEN CLICKING OUTSIDE
+   ========================================= */
+
+document.addEventListener("click", function(event) {
+
+
+    const sidebar =
+        document.getElementById("patientSidebar");
+
+
+    const menuButton =
+        document.querySelector(".mobile-menu-button");
+
+
+    if (!sidebar) return;
+
+
+    /*
+     * Sidebar is closed
+     */
+
+    if (!sidebar.classList.contains("open")) {
+
+        return;
+
+    }
+
+
+    /*
+     * Clicked INSIDE sidebar
+     */
+
+    if (sidebar.contains(event.target)) {
+
+        return;
+
+    }
+
+
+    /*
+     * Clicked hamburger button
+     */
+
+    if (
+        menuButton &&
+        menuButton.contains(event.target)
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     * Clicked OUTSIDE sidebar
+     * Close sidebar
+     */
+
+    sidebar.classList.remove("open");
+
+
+    /*
+     * Show hamburger again
+     */
+
+    if (menuButton) {
+
+        menuButton.style.display = "flex";
+
+    }
+
+});
+
+</script>
+
+
+
+{% block extra_js %}
+{% endblock %}
+
+
+</body>
+
+</html>

@@ -1,0 +1,391 @@
+{% extends "patient_base.html" %}
+
+{% block title %}
+Patient Dashboard - OmniCare AI
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/patient_dashboard.css') }}">
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard-page">
+
+    <!-- HEADER -->
+
+    <div class="dashboard-header">
+
+        <div>
+           
+
+            <h1>
+                Welcome, {{ patient.full_name if patient else "Patient" }}
+            </h1>
+
+            <p>
+                Your unified health information, all in one place.
+            </p>
+        </div>
+
+
+        <div class="health-status">
+
+            <span class="status-dot"></span>
+
+            Health Records Secure
+
+        </div>
+
+    </div>
+
+
+    <!-- QUICK STATS -->
+
+    <div class="stats-grid">
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon records-icon">
+                📋
+            </div>
+
+            <div>
+
+                <span class="stat-label">
+                    Health Records
+                </span>
+
+                <strong>
+                    {{ record_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon diagnosis-icon">
+                🩺
+            </div>
+
+            <div>
+
+                <span class="stat-label">
+                    Diagnoses
+                </span>
+
+                <strong>
+                    {{ diagnosis_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon medicine-icon">
+                💊
+            </div>
+
+            <div>
+
+                <span class="stat-label">
+                    Medications
+                </span>
+
+                <strong>
+                    {{ medication_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon followup-icon">
+                📅
+            </div>
+
+            <div>
+
+                <span class="stat-label">
+                    Follow-ups
+                </span>
+
+                <strong>
+                    {{ followup_count|default(0) }}
+                </strong>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN GRID -->
+
+    <div class="dashboard-grid">
+
+
+        <!-- RECENT RECORDS -->
+
+        <section class="dashboard-card records-card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h2>
+                        Recent Health Records
+                    </h2>
+
+                    <p>
+                        Latest information added to your health history.
+                    </p>
+
+                </div>
+
+                <a href="{{ url_for('patient_health_records') }}">
+                    View All
+                </a>
+
+            </div>
+
+
+            <div class="record-list">
+
+
+                {% if recent_records %}
+
+                    {% for record in recent_records %}
+
+                    <div class="record-item">
+
+                        <div class="record-type-icon">
+                            {% if record.type == "Hospital" %}
+                                🏥
+                            {% elif record.type == "Laboratory" %}
+                                🧪
+                            {% elif record.type == "Pharmacy" %}
+                                💊
+                            {% else %}
+                                📄
+                            {% endif %}
+                        </div>
+
+
+                        <div class="record-details">
+
+                            <h3>
+                                {{ record.title }}
+                            </h3>
+
+                            <p>
+                                {{ record.source|default("Medical Record") }}
+                            </p>
+
+                        </div>
+
+
+                        <span class="record-date">
+                            {{ record.date }}
+                        </span>
+
+                    </div>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <div class="empty-records">
+
+                        <div class="empty-icon">
+                            📋
+                        </div>
+
+                        <h3>
+                            No records yet
+                        </h3>
+
+                        <p>
+                            Upload your medical documents to start building your unified health history.
+                        </p>
+
+                        <a
+                            href="{{ url_for('patient_upload_records') }}"
+                            class="small-primary-button">
+
+                            Upload Record
+
+                        </a>
+
+                    </div>
+
+                {% endif %}
+
+
+            </div>
+
+        </section>
+
+
+        <!-- AI ASSISTANT -->
+
+        <section class="dashboard-card ai-card">
+
+            <div class="ai-header">
+
+                <div class="ai-icon">
+                    🤖
+                </div>
+
+                <div>
+
+                    <span>
+                        OmniCare Intelligence
+                    </span>
+
+                    <h2>
+                        AI Health Assistant
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <p class="ai-description">
+
+                Ask questions about your authorized medical records
+                and get information from your unified health history.
+
+            </p>
+
+
+            <div class="suggestion">
+
+                <span>💡</span>
+
+                <span>
+                    "Show my previous diagnoses"
+                </span>
+
+            </div>
+
+
+            <div class="suggestion">
+
+                <span>💡</span>
+
+                <span>
+                    "What medications were prescribed?"
+                </span>
+
+            </div>
+
+
+            <a
+                href="#"
+                class="ai-button">
+
+                Open AI Assistant
+                <span>→</span>
+
+            </a>
+
+        </section>
+
+
+    </div>
+
+
+    <!-- TIMELINE PREVIEW -->
+
+    <section class="dashboard-card timeline-card">
+
+        <div class="card-header">
+
+            <div>
+
+                <h2>
+                    Health Timeline
+                </h2>
+
+                <p>
+                    A chronological view of your medical history.
+                </p>
+
+            </div>
+
+            <a href="{{ url_for('health_timeline') }}">
+                View Timeline
+            </a>
+
+        </div>
+
+
+        <div class="timeline-preview">
+
+
+            <div class="timeline-line"></div>
+
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot"></div>
+
+                <div>
+
+                    <strong>
+                        Recent Medical Record
+                    </strong>
+
+                    <p>
+                        Your latest authorized health information
+                        will appear here.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot"></div>
+
+                <div>
+
+                    <strong>
+                        Medical History
+                    </strong>
+
+                    <p>
+                        Diagnoses, medications, investigations
+                        and follow-ups are organized chronologically.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+    </section>
+
+
+</div>
+
+{% endblock %}

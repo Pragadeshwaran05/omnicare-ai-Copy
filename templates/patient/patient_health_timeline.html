@@ -1,0 +1,247 @@
+{% extends "patient_base.html" %}
+
+{% block title %}My Health Timeline - OmniCare AI{% endblock %}
+
+{% block extra_css %}
+<style>
+.timeline-page{max-width:1200px;margin:0 auto;padding:28px;color:#193044}
+.timeline-header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:18px;margin-bottom:26px}
+.timeline-eyebrow{color:#0f9fa3;font-size:12px;font-weight:800;letter-spacing:1.4px}
+.timeline-header h1{margin:8px 0;font-size:clamp(25px,4vw,34px);color:#173849}
+.timeline-header p{margin:0;color:#718497;line-height:1.6}
+.timeline-count{padding:12px 18px;border-radius:14px;background:#e7f8f8;color:#087f83;font-weight:700;white-space:nowrap}
+.timeline-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:24px;padding:18px;background:#fff;border:1px solid #e3ecef;border-radius:16px;box-shadow:0 5px 20px rgba(25,48,68,.04)}
+.timeline-filters{display:flex;flex-wrap:wrap;gap:8px}
+.timeline-filter{padding:10px 14px;border:1px solid #dce8eb;border-radius:10px;background:#fff;color:#587080;font-weight:700;cursor:pointer}
+.timeline-filter.active,.timeline-filter:hover{background:#0f9fa3;color:#fff;border-color:#0f9fa3}
+.timeline-search{width:min(100%,260px);padding:11px 13px;border:1px solid #dce8eb;border-radius:10px;outline:none;font-size:14px}
+.timeline-search:focus{border-color:#0f9fa3;box-shadow:0 0 0 3px rgba(15,159,163,.12)}
+.timeline-list{position:relative;padding-left:30px}
+.timeline-list:before{content:"";position:absolute;left:10px;top:12px;bottom:12px;width:2px;background:#dcebed}
+.timeline-event{--event-color:#0f9fa3;position:relative;margin-bottom:24px;padding:22px;background:#fff;border:1px solid #e2ecef;border-left:4px solid var(--event-color);border-radius:16px;box-shadow:0 6px 22px rgba(25,48,68,.045)}
+.timeline-event:before{content:"";position:absolute;left:-34px;top:25px;width:12px;height:12px;background:var(--event-color);border:4px solid #f5f9fa;border-radius:50%}
+.event-investigation{--event-color:#3978d4}.event-prescription{--event-color:#15945a}.event-consultation{--event-color:#8657ce}.event-discharge{--event-color:#d18a28}.event-other{--event-color:#0f9fa3}
+.event-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:15px}
+.event-date{color:#718497;font-size:12px;font-weight:800;letter-spacing:.5px;margin-bottom:7px}
+.event-title{margin:0;font-size:19px;color:#193b4d;overflow-wrap:anywhere}
+.event-badge{display:inline-block;padding:7px 11px;border-radius:20px;background:#e9f7f7;color:#087f83;font-size:11px;font-weight:800}
+.event-section{margin-top:17px}
+.event-section h3{margin:0 0 7px;font-size:13px;color:#425d6e}
+.event-section p{margin:0;color:#657b8b;font-size:14px;line-height:1.75;overflow-wrap:anywhere}
+.event-detail{padding:13px;margin-top:8px;background:#f6f9fa;border-radius:11px;min-width:0;overflow-wrap:anywhere}
+.event-detail span{display:block;margin-bottom:6px;color:#718497;font-size:12px}
+.event-detail strong{color:#29495b;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.event-source{margin-top:16px;padding-top:13px;border-top:1px solid #edf1f3;color:#718497;font-size:12px}
+.timeline-empty{padding:48px 22px;text-align:center;background:#fff;border:1px dashed #cbdde1;border-radius:18px}
+.timeline-empty-icon{font-size:42px;margin-bottom:12px}
+.timeline-empty h2{margin:0 0 10px;color:#254557;font-size:21px}
+.timeline-empty p{max-width:480px;margin:0 auto 18px;color:#718497;line-height:1.7}
+.timeline-upload-btn{display:inline-block;padding:12px 17px;border-radius:10px;background:#0f9fa3;color:#fff;text-decoration:none;font-weight:700}
+.timeline-note{margin-top:20px;padding:14px 16px;background:#edf7ff;border-radius:12px;color:#456780;font-size:13px;line-height:1.7}
+.timeline-no-results{display:none;padding:24px;text-align:center;color:#718497}
+@media(max-width:768px){.timeline-page{padding:18px 14px}.timeline-toolbar{padding:13px}.timeline-filters{width:100%}.timeline-filter{flex:1 1 auto;padding:10px;font-size:12px}.timeline-search{width:100%}.timeline-list{padding-left:24px}.timeline-list:before{left:6px}.timeline-event{padding:16px;margin-bottom:18px}.timeline-event:before{left:-28px}.event-title{font-size:17px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="timeline-page">
+    <header class="timeline-header">
+        <div>
+            <span class="timeline-eyebrow">YOUR HEALTH JOURNEY</span>
+            <h1>My Health Timeline</h1>
+            <p>Understand your medical history through records organized by date.</p>
+        </div>
+        <div class="timeline-count">{{ timeline_events|length }} Medical Events</div>
+    </header>
+
+    {% if timeline_error|default(false) %}
+        <div class="timeline-empty">
+            <div class="timeline-empty-icon">⚠️</div>
+            <h2>Timeline temporarily unavailable</h2>
+            <p>We couldn't load your timeline. Please try again later. Your existing medical records have not been changed.</p>
+        </div>
+    {% elif timeline_events %}
+        <div class="timeline-toolbar">
+            <div class="timeline-filters">
+                <button type="button" class="timeline-filter active" data-filter="all">All Events</button>
+                <button type="button" class="timeline-filter" data-filter="consultation">Consultations</button>
+                <button type="button" class="timeline-filter" data-filter="investigation">Investigations</button>
+                <button type="button" class="timeline-filter" data-filter="prescription">Prescriptions</button>
+                <button type="button" class="timeline-filter" data-filter="discharge">Discharge</button>
+            </div>
+            <input type="search" class="timeline-search" id="timelineSearch" placeholder="Search your timeline..." aria-label="Search medical timeline">
+        </div>
+
+        <div class="timeline-list" id="timelineList">
+            {% for event in timeline_events %}
+                {% set kind = (event.get('event_type') or 'other')|lower %}
+                {% set category = 'other' %}
+                {% if 'consult' in kind or 'visit' in kind %}
+                    {% set category = 'consultation' %}
+                {% elif 'investig' in kind or 'lab' in kind or 'test' in kind or 'imaging' in kind or 'radiology' in kind %}
+                    {% set category = 'investigation' %}
+                {% elif 'prescription' in kind or 'medication' in kind %}
+                    {% set category = 'prescription' %}
+                {% elif 'discharge' in kind %}
+                    {% set category = 'discharge' %}
+                {% endif %}
+
+                {% set investigations = event.get('investigations') %}
+                {% set medications = event.get('medications') %}
+
+                <article class="timeline-event event-{{ category }}"
+                         data-category="{{ category }}"
+                         data-search="{{ ((event.get('event_type') or '') ~ ' ' ~ (event.get('diagnosis') or '') ~ ' ' ~ (event.get('clinical_findings') or '') ~ ' ' ~ (event.get('clinical_summary') or '') ~ ' ' ~ (event.get('hospital_name') or '') ~ ' ' ~ (event.get('provider_name') or ''))|lower }}">
+                    <div class="event-top">
+                        <div>
+                            <div class="event-date">{{ event.get('event_date') or 'Date not available' }}</div>
+                            <h2 class="event-title">{{ (event.get('event_type') or 'Medical Event')|replace('_', ' ')|title }}</h2>
+                        </div>
+                        <span class="event-badge">{{ category|title }}</span>
+                    </div>
+
+                    {% if event.get('diagnosis') %}
+                        <section class="event-section">
+                            <h3>Diagnosis / Assessment</h3>
+                            <p>{{ event.get('diagnosis') }}</p>
+                        </section>
+                    {% endif %}
+
+                    {% if event.get('clinical_findings') %}
+                        <section class="event-section">
+                            <h3>Clinical Findings</h3>
+                            <p>{{ event.get('clinical_findings') }}</p>
+                        </section>
+                    {% endif %}
+
+                    {% if event.get('clinical_summary') %}
+                        <section class="event-section">
+                            <h3>Summary</h3>
+                            <p>{{ event.get('clinical_summary') }}</p>
+                        </section>
+                    {% endif %}
+
+                    {% if investigations %}
+                        <section class="event-section">
+                            <h3>Investigations / Results</h3>
+                            {% if investigations is string %}
+                                <p>{{ investigations }}</p>
+                            {% elif investigations is mapping %}
+                                {% for name, value in investigations.items() %}
+                                    <div class="event-detail"><span>{{ name|replace('_', ' ')|title }}</span><strong>{{ value }}</strong></div>
+                                {% endfor %}
+                            {% else %}
+                                {% for item in investigations %}
+                                    <div class="event-detail">
+                                        {% if item is mapping %}
+                                            {% for name, value in item.items() %}
+                                                <span>{{ name|replace('_', ' ')|title }}: {{ value }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <strong>{{ item }}</strong>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </section>
+                    {% endif %}
+
+                    {% if medications %}
+                        <section class="event-section">
+                            <h3>Medications</h3>
+                            {% if medications is string %}
+                                <p>{{ medications }}</p>
+                            {% elif medications is mapping %}
+                                {% for name, value in medications.items() %}
+                                    <div class="event-detail"><span>{{ name|replace('_', ' ')|title }}</span><strong>{{ value }}</strong></div>
+                                {% endfor %}
+                            {% else %}
+                                {% for medicine in medications %}
+                                    <div class="event-detail">
+                                        {% if medicine is mapping %}
+                                            {% for name, value in medicine.items() %}
+                                                <span>{{ name|replace('_', ' ')|title }}: {{ value }}</span>
+                                            {% endfor %}
+                                        {% else %}
+                                            <strong>{{ medicine }}</strong>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        </section>
+                    {% endif %}
+
+                    {% if event.get('follow_up') %}
+                        <section class="event-section">
+                            <h3>Follow-up Advice</h3>
+                            <p>{{ event.get('follow_up') }}</p>
+                        </section>
+                    {% endif %}
+
+                    {% if event.get('provider_name') or event.get('hospital_name') %}
+                        <div class="event-source">
+                            {% if event.get('provider_name') %}Doctor / Provider: {{ event.get('provider_name') }}{% endif %}
+                            {% if event.get('provider_name') and event.get('hospital_name') %} · {% endif %}
+                            {% if event.get('hospital_name') %}{{ event.get('hospital_name') }}{% endif %}
+                        </div>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </div>
+
+        <div class="timeline-no-results" id="timelineNoResults">No events match your search or selected filter.</div>
+        <div class="timeline-note"><strong>Important:</strong> This timeline summarizes information extracted from your medical records. Consult your healthcare professional to interpret results or make treatment decisions.</div>
+    {% else %}
+        <div class="timeline-empty">
+            <div class="timeline-empty-icon">🗓️</div>
+            <h2>Your health timeline is getting started</h2>
+            <p>When your medical records have been processed, their available diagnoses, investigations, medications and follow-up details will appear here in date order.</p>
+            <a href="{{ url_for('patient_upload_records') }}" class="timeline-upload-btn">+ Upload Medical Record</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const filters = document.querySelectorAll(".timeline-filter");
+    const cards = document.querySelectorAll(".timeline-event");
+    const search = document.getElementById("timelineSearch");
+    const noResults = document.getElementById("timelineNoResults");
+    let activeFilter = "all";
+
+    function updateTimeline() {
+        const query = search ? search.value.trim().toLowerCase() : "";
+        let visibleCount = 0;
+
+        cards.forEach(function (card) {
+            const category = card.dataset.category || "other";
+            const searchableText = card.dataset.search || "";
+            const matchesFilter = activeFilter === "all" || category === activeFilter;
+            const matchesSearch = searchableText.includes(query);
+            const visible = matchesFilter && matchesSearch;
+            card.style.display = visible ? "" : "none";
+            if (visible) visibleCount++;
+        });
+
+        if (noResults) {
+            noResults.style.display = cards.length > 0 && visibleCount === 0 ? "block" : "none";
+        }
+    }
+
+    filters.forEach(function (button) {
+        button.addEventListener("click", function () {
+            activeFilter = button.dataset.filter || "all";
+            filters.forEach(function (item) {
+                item.classList.toggle("active", item === button);
+            });
+            updateTimeline();
+        });
+    });
+
+    if (search) search.addEventListener("input", updateTimeline);
+    updateTimeline();
+});
+</script>
+{% endblock %}

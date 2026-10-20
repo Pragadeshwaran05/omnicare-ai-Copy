@@ -1,0 +1,20 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}Consultation & Prescription - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Consultation &amp; Prescription</h1>
+            <p>Manage patient consultations, notes, and digital prescriptions.</p>
+        </div>
+    </div>
+    <div class="empty-patients">
+        <div class="empty-icon">📝</div>
+        <h3>No active consultations</h3>
+        <p>Select an authorized patient to create a new consultation note or prescription.</p>
+    </div>
+</div>
+{% endblock %}

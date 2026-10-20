@@ -1,0 +1,4352 @@
+{% extends "doctor_base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_patient_workspace.css') }}">
+
+<div class="patient-workspace-page">
+
+    <!-- BACK -->
+    <a href="{{ url_for('doctor_my_patients') }}"
+       class="back-to-patients">
+        ← Back to My Patients
+    </a>
+
+
+    <!-- =====================================================
+         PATIENT HEADER
+         ===================================================== -->
+
+    <div class="workspace-header">
+
+        <div class="patient-header-left">
+
+            <div class="patient-avatar-large">
+                👤
+            </div>
+
+            <div class="patient-header-info">
+
+                <h1>
+                    {{ patient.get('full_name')
+                       or patient.get('name')
+                       or 'Patient' }}
+                </h1>
+
+                <p>
+                    Health ID:
+                    <strong>
+                        {{ patient.get('health_id') or 'Not available' }}
+                    </strong>
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="workspace-access-status">
+
+            {% if access.get('access_type') == 'temporary' %}
+
+                <span class="workspace-access-badge temporary">
+                    🟡 Temporary Access
+                </span>
+
+            {% elif access.get('access_type') == 'permanent' %}
+
+                <span class="workspace-access-badge permanent">
+                    🟢 Permanent Access
+                </span>
+
+            {% elif access.get('access_type') == 'one_time' %}
+
+                <span class="workspace-access-badge one-time">
+                    🔵 One-Time Access
+                </span>
+
+            {% else %}
+
+                <span class="workspace-access-badge">
+                    🟢 Active Access
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         ACCESS INFORMATION
+         ===================================================== -->
+
+    <div class="access-information-card">
+
+        <div class="access-information-item">
+
+            <span class="access-information-label">
+                Access Granted
+            </span>
+
+            <span class="access-information-value">
+                {{ access.get('approved_at') or 'Not available' }}
+            </span>
+
+        </div>
+
+
+        <div class="access-information-item">
+
+            <span class="access-information-label">
+                Access Type
+            </span>
+
+            <span class="access-information-value">
+
+                {% if access.get('access_type') == 'temporary' %}
+                    Temporary — 4 Hours
+
+                {% elif access.get('access_type') == 'permanent' %}
+                    Permanent
+
+                {% elif access.get('access_type') == 'one_time' %}
+                    One-Time
+
+                {% else %}
+                    Active
+                {% endif %}
+
+            </span>
+
+        </div>
+
+
+        {% if access.get('expires_at') %}
+
+        <div class="access-information-item">
+
+            <span class="access-information-label">
+                Access Expires
+            </span>
+
+            <span class="access-information-value expiry-value">
+                {{ access.get('expires_at') }}
+            </span>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+<!-- =====================================================
+     MEDICAL CONFLICT SUMMARY
+     ===================================================== -->
+
+<div class="conflict-summary-card">
+
+    <div class="conflict-summary-left">
+
+        <div class="conflict-summary-icon">
+            ⚠️
+        </div>
+
+        <div>
+
+            <h3>
+                Medical Conflict Summary
+            </h3>
+
+            {% if conflict_summary.total > 0 %}
+
+                <p>
+                    OmniCare AI detected
+                    <strong>
+                        {{ conflict_summary.total }}
+                    </strong>
+                    possible inconsistency{% if conflict_summary.total != 1 %}ies{% endif %}
+                    across the authorized records.
+                </p>
+
+            {% else %}
+
+                <p>
+                    No obvious inconsistencies detected
+                    across the available records.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <div class="conflict-summary-stats">
+
+        <!-- TOTAL -->
+
+        <div class="conflict-summary-stat total">
+
+            <strong>
+                {{ conflict_summary.total }}
+            </strong>
+
+            <span>
+                Total
+            </span>
+
+        </div>
+
+
+        <!-- HIGH -->
+
+        <div class="conflict-summary-stat high">
+
+            <strong>
+                {{ conflict_summary.high }}
+            </strong>
+
+            <span>
+                High
+            </span>
+
+        </div>
+
+
+        <!-- MEDIUM -->
+
+        <div class="conflict-summary-stat medium">
+
+            <strong>
+                {{ conflict_summary.medium }}
+            </strong>
+
+            <span>
+                Medium
+            </span>
+
+        </div>
+
+
+        <!-- LOW -->
+
+        <div class="conflict-summary-stat low">
+
+            <strong>
+                {{ conflict_summary.low }}
+            </strong>
+
+            <span>
+                Low
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- =====================================================
+     WORKSPACE NAVIGATION
+     ===================================================== -->
+
+<div class="workspace-navigation">
+
+    <button type="button"
+            class="workspace-nav-item active"
+            data-tab="medical-records-tab">
+        <span class="workspace-nav-icon">📋</span>
+        <span>Medical Records</span>
+    </button>
+
+    <button type="button"
+            class="workspace-nav-item"
+            data-tab="health-timeline-tab">
+        <span class="workspace-nav-icon">🕒</span>
+        <span>Health Timeline</span>
+    </button>
+<!-- Trend Analysis -->
+    <button type="button"
+            class="workspace-nav-item"
+            data-tab="trend-analysis-tab">
+        <span class="workspace-nav-icon">📊</span>
+        <span>Trend Analysis</span>
+    </button>
+    <!-- Medical Conflict Alerts -->
+    <button type="button"
+            class="workspace-nav-item"
+            data-tab="medical-conflicts-tab">
+        <span class="workspace-nav-icon">⚠️</span>
+        <span>Medical Conflict Alerts</span>
+        <span class="conflict-nav-badge{% if not conflicts %} zero{% endif %}" id="conflict-nav-count">{{ conflicts|length }}</span>
+    </button>
+
+    <button type="button"
+            class="workspace-nav-item"
+            data-tab="ai-assistant-tab">
+        <span class="workspace-nav-icon">🤖</span>
+        <span>AI Health Assistant</span>
+    </button>
+
+</div>
+
+    <!-- =====================================================
+         MEDICAL RECORDS TAB
+         ===================================================== -->
+
+    <div id="medical-records-tab"
+         class="workspace-tab-content active">
+
+        <div class="workspace-section">
+
+            <div class="workspace-section-header">
+
+                <div>
+
+                    <h2>
+                        Authorized Medical Records
+                    </h2>
+
+                    <p>
+                        Medical records currently available to you
+                        under this patient's authorization.
+                    </p>
+
+                </div>
+
+                <span class="record-count">
+                    {{ records|length }}
+                </span>
+
+            </div>
+
+
+            {% if records %}
+
+                <div class="medical-records-list">
+
+                    {% for record in records %}
+
+                        <div class="medical-record-card">
+
+                            <div class="record-icon">
+                                📄
+                            </div>
+
+
+                            <div class="record-information">
+
+                                <h3>
+                                    {{ record.get('title')
+                                       or 'Medical Record' }}
+                                </h3>
+
+                                <p class="record-type">
+                                    {{ record.get('record_type')
+                                       or 'Medical Document' }}
+                                </p>
+
+
+                                {% if record.get('description') %}
+
+                                    <p class="record-description">
+                                        {{ record.get('description') }}
+                                    </p>
+
+                                {% endif %}
+
+
+                                {% if record.get('uploaded_at') %}
+
+                                    <p class="record-date">
+                                        Uploaded:
+                                        {{ record.get('uploaded_at') }}
+                                    </p>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            {% if record.get('file_url') %}
+
+                                <a href="{{ record.get('file_url') }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="view-record-btn">
+
+                                    View Record
+                                    <span>→</span>
+
+                                </a>
+
+                            {% endif %}
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="no-records">
+
+                    <div class="no-records-icon">
+                        📂
+                    </div>
+
+                    <h3>
+                        No Medical Records
+                    </h3>
+
+                    <p>
+                        No medical records are currently available
+                        for this patient.
+                    </p>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         HEALTH TIMELINE TAB
+         ===================================================== -->
+
+ <!-- =====================================================
+     HEALTH TIMELINE TAB
+     ===================================================== -->
+
+<div id="health-timeline-tab"
+     class="workspace-tab-content">
+
+    <div class="timeline-main-card">
+
+        <!-- HEADER -->
+        <div class="timeline-header">
+
+            <div>
+
+                <div class="timeline-title-row">
+
+                    <h2>
+                        Unified Health Timeline
+                    </h2>
+
+                    {% if timeline_events %}
+
+                        <span class="ai-generated-badge">
+                            ✨ AI Generated
+                        </span>
+
+                    {% else %}
+
+                        <span class="ai-generated-badge">
+                            🔄 Processing
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+                <p>
+                    A chronological view of this patient's
+                    authorized medical history generated from
+                    processed medical records.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- DATE NOTE -->
+        <div class="timeline-date-note">
+
+            <strong>Timeline dates:</strong>
+
+            Events are displayed using the actual medical event
+            date extracted by OmniCare AI from the original
+            medical document.
+
+        </div>
+
+
+        <!-- FILTERS -->
+        <div class="timeline-filters">
+
+            <button type="button"
+                    class="timeline-filter active"
+                    data-filter="all">
+
+                📋 All Events
+                <span>({{ timeline_events|length }})</span>
+
+            </button>
+
+
+            <button type="button"
+                    class="timeline-filter"
+                    data-filter="consultation">
+
+                🩺 Consultations
+
+            </button>
+
+
+            <button type="button"
+                    class="timeline-filter"
+                    data-filter="investigation">
+
+                🧪 Investigations
+
+            </button>
+
+
+            <button type="button"
+                    class="timeline-filter"
+                    data-filter="medication">
+
+                💊 Medications
+
+            </button>
+
+
+            <button type="button"
+                    class="timeline-filter"
+                    data-filter="follow_up">
+
+                📋 Follow-ups
+
+            </button>
+
+        </div>
+
+<!-- =================================================
+             AI CLINICAL OVERVIEW
+             ================================================= -->
+
+        <div class="ai-clinical-overview">
+
+            <div class="ai-overview-content">
+
+                <h3>
+                    ✨ AI Clinical Overview
+                </h3>
+
+                {% if timeline_events %}
+
+                    <p>
+                        OmniCare AI has processed
+                        <strong>{{ timeline_events|length }}</strong>
+                        clinical event{% if timeline_events|length != 1 %}s{% endif %}
+                        from this patient's authorized medical records.
+                    </p>
+
+                    <div class="ai-processing-status">
+
+                        ✅ AI document processing completed.
+
+                    </div>
+
+                {% else %}
+
+                    <p>
+                        No AI-generated clinical events are available
+                        yet for this patient.
+                    </p>
+
+                    <div class="ai-processing-status">
+
+                        🔄 AI processing will appear here after
+                        medical documents are processed.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <div class="ai-overview-stats">
+
+
+                <!-- DIAGNOSES -->
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-icon">
+                        🩺
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            {% set diagnosis_count = namespace(value=0) %}
+
+                            {% for event in timeline_events %}
+
+                                {% if event.get('diagnosis') %}
+
+                                    {% set diagnosis_count.value =
+                                        diagnosis_count.value + 1 %}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            {{ diagnosis_count.value }}
+
+                        </strong>
+
+                        <span>
+                            Diagnoses
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- INVESTIGATIONS -->
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-icon">
+                        🧪
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            {% set investigation_count = namespace(value=0) %}
+
+                            {% for event in timeline_events %}
+
+                                {% if event.get('investigations') %}
+
+                                    {% set investigation_count.value =
+                                        investigation_count.value
+                                        + (event.get('investigations')|length) %}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            {{ investigation_count.value }}
+
+                        </strong>
+
+                        <span>
+                            Investigations
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MEDICATIONS -->
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-icon">
+                        💊
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            {% set medication_count = namespace(value=0) %}
+
+                            {% for event in timeline_events %}
+
+                                {% if event.get('medications') %}
+
+                                    {% set medication_count.value =
+                                        medication_count.value
+                                        + (event.get('medications')|length) %}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            {{ medication_count.value }}
+
+                        </strong>
+
+                        <span>
+                            Medications
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- FOLLOW-UPS -->
+
+                <div class="ai-stat">
+
+                    <span class="ai-stat-icon">
+                        📋
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            {% set followup_count = namespace(value=0) %}
+
+                            {% for event in timeline_events %}
+
+                                {% if event.get('follow_up') %}
+
+                                    {% set followup_count.value =
+                                        followup_count.value + 1 %}
+
+                                {% endif %}
+
+                            {% endfor %}
+
+                            {{ followup_count.value }}
+
+                        </strong>
+
+                        <span>
+                            Follow-ups
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             REAL AI GENERATED TIMELINE
+             ================================================= -->
+
+        {% if timeline_events %}
+
+        <div class="unified-timeline">
+
+            {% for event in timeline_events %}
+
+
+                <!-- =========================================
+                     EVENT TYPE
+                     ========================================= -->
+
+                {% set event_type =
+                    (event.get('event_type') or 'other')|lower %}
+
+
+                {% if event_type == 'consultation' %}
+
+                    {% set event_class = 'event-consultation' %}
+                    {% set event_filter = 'consultation' %}
+                    {% set event_icon = '🩺' %}
+                    {% set event_label = 'Consultation' %}
+
+
+                {% elif event_type == 'diagnosis' %}
+
+                    {% set event_class = 'event-consultation' %}
+                    {% set event_filter = 'consultation' %}
+                    {% set event_icon = '🩺' %}
+                    {% set event_label = 'Diagnosis' %}
+
+
+                {% elif event_type == 'investigation' %}
+
+                    {% set event_class = 'event-investigation' %}
+                    {% set event_filter = 'investigation' %}
+                    {% set event_icon = '🧪' %}
+                    {% set event_label = 'Investigation' %}
+
+
+                {% elif event_type == 'medication' %}
+
+                    {% set event_class = 'event-medication' %}
+                    {% set event_filter = 'medication' %}
+                    {% set event_icon = '💊' %}
+                    {% set event_label = 'Medication' %}
+
+
+                {% elif event_type == 'follow_up' %}
+
+                    {% set event_class = 'event-followup' %}
+                    {% set event_filter = 'follow_up' %}
+                    {% set event_icon = '📋' %}
+                    {% set event_label = 'Follow-up' %}
+
+
+                {% elif event_type == 'hospitalization' %}
+
+                    {% set event_class = 'event-general' %}
+                    {% set event_filter = 'consultation' %}
+                    {% set event_icon = '🏥' %}
+                    {% set event_label = 'Hospitalization' %}
+
+
+                {% else %}
+
+                    {% set event_class = 'event-general' %}
+                    {% set event_filter = 'consultation' %}
+                    {% set event_icon = '📄' %}
+                    {% set event_label = 'Medical Event' %}
+
+                {% endif %}
+
+
+                <!-- =========================================
+                     TIMELINE EVENT
+                     ========================================= -->
+
+                <div class="timeline-event {{ event_class }}"
+                     data-event-type="{{ event_filter }}">
+
+
+                    <!-- DATE -->
+
+                    <div class="timeline-event-date">
+
+                        {% if event.get('event_date') %}
+
+                            <strong>
+                                {{ event.get('event_date') }}
+                            </strong>
+
+                            <span>
+                                Medical event date
+                            </span>
+
+                        {% else %}
+
+                            <strong>
+                                Date unavailable
+                            </strong>
+
+                            <span>
+                                Event date not available
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- TIMELINE DOT -->
+
+                    <div class="timeline-dot"></div>
+
+
+                    <!-- EVENT CARD -->
+
+                    <div class="timeline-event-card">
+
+                        <div class="event-card-layout">
+
+
+                            <!-- =================================
+                                 EVENT IDENTITY
+                                 ================================= -->
+
+                            <div class="event-identity">
+
+                                <div class="event-icon">
+                                    {{ event_icon }}
+                                </div>
+
+
+                                <div>
+
+                                    <h3 class="event-type">
+                                        {{ event_label }}
+                                    </h3>
+
+
+                                    {% if event.get('provider_name') %}
+
+                                        <div class="event-provider">
+
+                                            {{ event.get('provider_name') }}
+
+                                        </div>
+
+                                    {% endif %}
+
+
+                                    {% if event.get('hospital_name') %}
+
+                                        <div class="event-source-type">
+
+                                            {{ event.get('hospital_name') }}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- =================================
+                                 CLINICAL DETAILS
+                                 ================================= -->
+
+                            <div class="event-details">
+
+
+                                <!-- DIAGNOSIS -->
+
+                                {% if event.get('diagnosis') %}
+
+                                    <div class="event-detail-label">
+                                        Diagnosis
+                                    </div>
+
+                                    <div class="event-title">
+
+                                        {{ event.get('diagnosis') }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- CLINICAL FINDINGS -->
+
+                                {% if event.get('clinical_findings') %}
+
+                                    <div class="event-detail-label">
+                                        Clinical Findings
+                                    </div>
+
+                                    <div class="event-description">
+
+                                        {{ event.get('clinical_findings') }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- INVESTIGATIONS -->
+
+                                {% if event.get('investigations') %}
+
+                                    {% if event.get('investigations')|length > 0 %}
+
+                                        <div class="event-detail-label">
+                                            Investigations
+                                        </div>
+
+                                        <div class="event-description">
+
+                                            <ul class="timeline-list">
+
+                                                {% for investigation in event.get('investigations') %}
+
+                                                    <li>
+
+                                                        <strong>
+                                                            {{ investigation.get('name')
+                                                               or 'Investigation' }}
+                                                        </strong>
+
+
+                                                        {% if investigation.get('result') %}
+
+                                                            :
+                                                            {{ investigation.get('result') }}
+
+                                                        {% endif %}
+
+
+                                                        {% if investigation.get('unit') %}
+
+                                                            {{ investigation.get('unit') }}
+
+                                                        {% endif %}
+
+                                                    </li>
+
+                                                {% endfor %}
+
+                                            </ul>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+
+                                <!-- MEDICATIONS -->
+
+                                {% if event.get('medications') %}
+
+                                    {% if event.get('medications')|length > 0 %}
+
+                                        <div class="event-detail-label">
+                                            Medications
+                                        </div>
+
+                                        <div class="event-description">
+
+                                            <ul class="timeline-list">
+
+                                                {% for medicine in event.get('medications') %}
+
+                                                    <li>
+
+                                                        <strong>
+                                                            {{ medicine.get('name')
+                                                               or 'Medication' }}
+                                                        </strong>
+
+
+                                                        {% if medicine.get('dose') %}
+
+                                                            — {{ medicine.get('dose') }}
+
+                                                        {% endif %}
+
+
+                                                        {% if medicine.get('frequency') %}
+
+                                                            — {{ medicine.get('frequency') }}
+
+                                                        {% endif %}
+
+
+                                                        {% if medicine.get('duration') %}
+
+                                                            — {{ medicine.get('duration') }}
+
+                                                        {% endif %}
+
+
+                                                        {% if medicine.get('instructions') %}
+
+                                                            <br>
+
+                                                            <span>
+
+                                                                {{ medicine.get('instructions') }}
+
+                                                            </span>
+
+                                                        {% endif %}
+
+                                                    </li>
+
+                                                {% endfor %}
+
+                                            </ul>
+
+                                        </div>
+
+                                    {% endif %}
+
+                                {% endif %}
+
+
+                                <!-- FOLLOW-UP -->
+
+                                {% if event.get('follow_up') %}
+
+                                    <div class="event-detail-label">
+                                        Follow-up
+                                    </div>
+
+                                    <div class="event-description">
+
+                                        {{ event.get('follow_up') }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- CLINICAL SUMMARY -->
+
+                                {% if event.get('clinical_summary') %}
+
+                                    <div class="event-detail-label">
+                                        Clinical Summary
+                                    </div>
+
+                                    <div class="event-description">
+
+                                        {{ event.get('clinical_summary') }}
+
+                                    </div>
+
+                                {% endif %}
+
+
+                                <!-- EMPTY EVENT -->
+
+                                {% if not event.get('diagnosis')
+                                      and not event.get('clinical_findings')
+                                      and not event.get('investigations')
+                                      and not event.get('medications')
+                                      and not event.get('follow_up')
+                                      and not event.get('clinical_summary') %}
+
+                                    <div class="event-description">
+
+                                        AI did not extract additional
+                                        clinical information from this
+                                        medical document.
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+
+                            <!-- =================================
+                                 ORIGINAL RECORD
+                                 ================================= -->
+
+                        <!-- =================================
+     ORIGINAL RECORD
+     ================================= -->
+
+<div class="event-actions">
+
+    {% if event.get('medical_record_id') %}
+
+        <a href="{{ url_for(
+                'doctor_view_medical_record',
+                patient_id=patient.get('id'),
+                record_id=event.get('medical_record_id')
+            ) }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="view-original-btn">
+
+            📄 View Original
+
+        </a>
+
+    {% else %}
+
+        <span class="no-original-btn">
+
+            Original record unavailable
+
+        </span>
+
+    {% endif %}
+
+</div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- =================================================
+             AI PIPELINE NOTE
+             ================================================= -->
+
+        <div class="ai-processing-note">
+
+            <strong>
+                OmniCare AI pipeline:
+            </strong>
+
+            Original Medical Record
+            →
+            AI Document Understanding
+            →
+            Structured Clinical Event
+            →
+            Unified Health Timeline.
+
+            Every timeline event remains linked to its
+            original medical record for verification.
+
+        </div>
+
+
+        {% else %}
+
+
+        <!-- =================================================
+             EMPTY TIMELINE
+             ================================================= -->
+
+        <div class="timeline-empty">
+
+            <div>
+                🕒
+            </div>
+
+            <h3>
+                No AI Timeline Events Yet
+            </h3>
+
+            <p>
+                No processed medical events are currently
+                available for this patient.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+    <!-- =====================================================
+         TREND ANALYSIS TAB
+         ===================================================== -->
+
+    <div id="trend-analysis-tab"
+         class="workspace-tab-content">
+
+        <div class="trend-analysis-section">
+
+            <!-- MAIN TREND CARD -->
+            <div class="trend-main-card">
+
+                <!-- HEADER -->
+                <div class="trend-header">
+
+                    <div class="trend-title-area">
+
+                        <h2>
+                            <span>📊</span>
+                            <span>Patient Health Trends</span>
+                        </h2>
+
+                        <p>
+                            Tracks recorded health measurements and laboratory observations over time from authorized medical records.
+                        </p>
+
+                    </div>
+
+                    <div class="trend-header-badges">
+
+                        {% if trend_data and trend_data.has_data %}
+
+                            <span class="trend-date-badge">
+                                📅 {{ trend_data.date_range_display }}
+                            </span>
+
+                            <span class="trend-total-badge">
+                                🧪 {{ trend_data.total_measurements_all_time }} Total Measurements
+                            </span>
+
+                        {% else %}
+
+                            <span class="trend-total-badge">
+                                📂 No Health Measurements Recorded
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- CLINICAL VERIFICATION NOTICE -->
+                <div class="trend-notice-card">
+
+                    <span>ℹ️</span>
+
+                    <div>
+                        <strong>Clinical Verification Notice:</strong>
+                        Trend Analysis displays chronologically structured measurements extracted from authorized laboratory and clinical documents to assist physician review. Historical trends must be evaluated in clinical context and verified against original medical reports.
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     FILTER PANEL
+                     ============================================= -->
+
+                <div class="trend-filter-card">
+
+                    <div class="trend-filter-header">
+
+                        <h3 class="trend-filter-title">
+                            <span>🔍</span>
+                            <span>Filter Health Parameters &amp; Timeframe</span>
+                        </h3>
+
+                    </div>
+
+                    <div class="trend-filters-grid">
+
+                        <!-- PARAMETER MULTI-SELECT -->
+                        <div class="trend-filter-control-group">
+
+                            <label class="trend-control-label" for="trend-dropdown-toggle">
+                                Health Parameters
+                            </label>
+
+                            <div class="trend-multiselect-wrapper" id="trend-multiselect-wrapper">
+
+                                <button type="button"
+                                        class="trend-dropdown-toggle"
+                                        id="trend-dropdown-toggle"
+                                        aria-haspopup="true"
+                                        aria-expanded="false">
+
+                                    <div class="trend-dropdown-selected-text">
+                                        <span id="trend-dropdown-label-text">Select Parameters</span>
+                                        <span class="trend-selected-badge" id="trend-selected-badge">
+                                            {{ trend_data.active_keys|length if trend_data else 0 }}
+                                        </span>
+                                    </div>
+
+                                    <span class="trend-dropdown-caret">▼</span>
+
+                                </button>
+
+                                <div class="trend-dropdown-menu" id="trend-dropdown-menu">
+
+                                    <div class="trend-dropdown-quick-actions">
+
+                                        <button type="button" class="trend-quick-btn" id="trend-select-trends-btn">
+                                            Select Trends (≥2)
+                                        </button>
+
+                                        <button type="button" class="trend-quick-btn" id="trend-select-all-btn">
+                                            Select All
+                                        </button>
+
+                                        <button type="button" class="trend-quick-btn" id="trend-clear-all-btn">
+                                            Clear All
+                                        </button>
+
+                                    </div>
+
+                                    <div class="trend-dropdown-list" id="trend-dropdown-list">
+
+                                        {% if trend_data and trend_data.available_parameters %}
+
+                                            {% for param in trend_data.available_parameters %}
+
+                                                <label class="trend-checkbox-option" data-key="{{ param.key }}" data-sufficient="{{ 'true' if param.has_sufficient_data else 'false' }}">
+
+                                                    <span class="trend-checkbox-label">
+                                                        <input type="checkbox"
+                                                               class="trend-param-checkbox"
+                                                               value="{{ param.key }}"
+                                                               {% if param.key in trend_data.active_keys %}checked{% endif %}>
+                                                        <span>{{ param.name }}</span>
+                                                    </span>
+
+                                                    {% if param.has_sufficient_data %}
+                                                        <span class="trend-param-meta-badge sufficient">
+                                                            {{ param.count }} records
+                                                        </span>
+                                                    {% else %}
+                                                        <span class="trend-param-meta-badge single" title="Single measurement - insufficient for historical trend line">
+                                                            1 record (Single)
+                                                        </span>
+                                                    {% endif %}
+
+                                                </label>
+
+                                            {% endfor %}
+
+                                        {% else %}
+
+                                            <div style="padding: 12px; color: #64748b; font-size: 13px; text-align: center;">
+                                                No health parameters discovered
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- TIME-PERIOD SELECTOR -->
+                        <div class="trend-filter-control-group">
+
+                            <span class="trend-control-label">
+                                Time Period
+                            </span>
+
+                            <div class="trend-period-group" id="trend-period-group">
+
+                                <button type="button"
+                                        class="trend-period-btn"
+                                        data-period="3m">
+                                    Last 3 Months
+                                </button>
+
+                                <button type="button"
+                                        class="trend-period-btn"
+                                        data-period="6m">
+                                    Last 6 Months
+                                </button>
+
+                                <button type="button"
+                                        class="trend-period-btn"
+                                        data-period="1y">
+                                    Last 1 Year
+                                </button>
+
+                                <button type="button"
+                                        class="trend-period-btn active"
+                                        data-period="all">
+                                    All History
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACTION BUTTONS -->
+                        <div class="trend-filter-actions">
+
+                            <button type="button"
+                                    class="trend-btn-apply"
+                                    id="trend-apply-filters-btn">
+                                <span>⚡</span>
+                                <span>Apply Filters</span>
+                            </button>
+
+                            <button type="button"
+                                    class="trend-btn-reset"
+                                    id="trend-reset-filters-btn">
+                                Reset
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     DANGER-LEVEL LEGEND
+                     ============================================= -->
+
+                <div class="trend-legend-bar">
+
+                    <span class="trend-legend-title">Clinical Status Legend</span>
+
+                    <div class="trend-legend-items">
+
+                        <div class="trend-legend-item">
+                            <span class="trend-legend-dot green"></span>
+                            <span><strong>Normal / In Range</strong>: Within validated reference threshold</span>
+                        </div>
+
+                        <div class="trend-legend-item">
+                            <span class="trend-legend-dot amber"></span>
+                            <span><strong>Borderline / Elevated</strong>: Outside optimal range, review required</span>
+                        </div>
+
+                        <div class="trend-legend-item">
+                            <span class="trend-legend-dot red"></span>
+                            <span><strong>Critical / Diagnostic</strong>: Exceeds validated disease threshold</span>
+                        </div>
+
+                        <div class="trend-legend-item">
+                            <span class="trend-legend-dot gray"></span>
+                            <span><strong>Unclassified</strong>: Baseline or individualized context needed</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     SUMMARY CARDS
+                     ============================================= -->
+
+                <div class="trend-summary-section">
+
+                    <h3 class="trend-section-title">
+                        <span>📈</span>
+                        <span>Selected Parameter Summaries</span>
+                    </h3>
+
+                    <div class="trend-summary-grid" id="trend-summary-grid">
+
+                        {% if trend_data and trend_data.summaries %}
+
+                            {% for s in trend_data.summaries %}
+
+                                <div class="trend-summary-card">
+
+                                    <div class="trend-summary-top">
+
+                                        <div>
+                                            <h4 class="trend-summary-name">{{ s.param_name }}</h4>
+                                            <span class="trend-summary-category">{{ s.category }}</span>
+                                        </div>
+
+                                        <span class="trend-status-badge {{ s.danger_level }}">
+                                            {{ s.danger_label }}
+                                        </span>
+
+                                    </div>
+
+                                    <div class="trend-summary-value-area">
+
+                                        <span class="trend-summary-number">{{ s.latest_value }}</span>
+                                        <span class="trend-summary-unit">{{ s.unit }}</span>
+
+                                    </div>
+
+                                    <div class="trend-summary-bottom">
+
+                                        <div>
+                                            {% if s.has_sufficient_data and s.change_text %}
+                                                <span class="trend-change-badge {{ s.change_direction }}">
+                                                    {% if s.change_direction == 'up' %}↗{% elif s.change_direction == 'down' %}↘{% else %}→{% endif %}
+                                                    {{ s.change_text }}{% if s.pct_change %} ({{ s.pct_change }}){% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span style="color: #94a3b8; font-weight: 600;">Single reading</span>
+                                            {% endif %}
+                                        </div>
+
+                                        <span class="trend-summary-date">
+                                            {{ s.latest_date_formatted }}
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="trend-empty-state" style="grid-column: 1 / -1;">
+                                <div class="trend-empty-icon">📂</div>
+                                <h3>No Parameter Summaries</h3>
+                                <p>No measurements match the currently selected parameters or date range.</p>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     TREND CHARTS
+                     ============================================= -->
+
+                <div class="trend-charts-section">
+
+                    <h3 class="trend-section-title">
+                        <span>📊</span>
+                        <span>Interactive Health Trajectory</span>
+                    </h3>
+
+                    <div class="trend-charts-grid" id="trend-charts-grid">
+
+                        {% if trend_data and trend_data.charts %}
+
+                            {% for key, chart in trend_data.charts.items() %}
+
+                                <div class="trend-chart-card" data-card-key="{{ key }}">
+
+                                    <div class="trend-chart-header">
+
+                                        <div>
+                                            <h4 class="trend-chart-title">{{ chart.param_name }}</h4>
+                                            <p class="trend-chart-ref-range">Reference: {{ chart.reference_range }}</p>
+                                        </div>
+
+                                        {% if chart.has_sufficient_data %}
+                                            {% if chart.latest_danger_level %}
+                                                <span class="trend-status-badge {{ chart.latest_danger_level }}">
+                                                    {{ chart.latest_danger_label }}: {{ chart.latest_value }} {{ chart.unit }}
+                                                </span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="trend-status-badge gray">
+                                                Single Observation
+                                            </span>
+                                        {% endif %}
+
+                                    </div>
+
+                                    {% if chart.has_sufficient_data %}
+
+                                        <div class="trend-chart-canvas-wrapper">
+                                            <canvas id="canvas-{{ key }}" data-key="{{ key }}"></canvas>
+                                        </div>
+
+                                        <div class="trend-chart-footer">
+
+                                            <div class="trend-chart-clinical-note">
+                                                <span>ℹ️</span>
+                                                <span>{{ chart.latest_danger_reason or 'Plotted from authorized records.' }}</span>
+                                            </div>
+
+                                        </div>
+
+                                    {% else %}
+
+                                        <!-- SINGLE MEASUREMENT NOTICE -->
+                                        <div class="trend-single-measurement-box">
+
+                                            <div class="trend-single-value">
+                                                {{ chart.latest_value if chart.latest_value is defined else (chart.meta[0].value if chart.meta else 'N/A') }}
+                                                <span style="font-size: 16px; color: #64748b;">{{ chart.unit }}</span>
+                                            </div>
+
+                                            <div class="trend-single-meta">
+                                                Recorded on {{ chart.labels[0] if chart.labels else 'N/A' }}
+                                                {% if chart.meta and chart.meta[0].danger_label %}
+                                                    &bull; <strong style="color: #123f63;">{{ chart.meta[0].danger_label }}</strong>
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="trend-insufficient-banner">
+                                                <span>⚠️</span>
+                                                <span>Insufficient historical data for trend analysis. At least two chronological measurements are required to establish a trajectory.</span>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="trend-chart-footer">
+
+                                            <div class="trend-chart-clinical-note">
+                                                <span>ℹ️</span>
+                                                <span>{{ chart.meta[0].danger_reason if chart.meta else 'Awaiting follow-up laboratory measurements.' }}</span>
+                                            </div>
+
+                                            {% if chart.meta and chart.meta[0].record_id %}
+                                                <a href="{{ url_for('doctor_view_medical_record', patient_id=patient.id, record_id=chart.meta[0].record_id) }}"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   class="trend-chart-source-link">
+                                                    📄 View Source Report
+                                                </a>
+                                            {% endif %}
+
+                                        </div>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div class="trend-empty-state" style="grid-column: 1 / -1;">
+                                <div class="trend-empty-icon">📈</div>
+                                <h3>No Trend Charts Available</h3>
+                                <p>Select at least one health parameter above to display its trend chart.</p>
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     AI TREND OBSERVATIONS
+                     ============================================= -->
+
+                <div class="trend-ai-card" id="trend-ai-card">
+
+                    <div class="trend-ai-header">
+
+                        <div class="trend-ai-title-wrap">
+                            <span>🤖</span>
+                            <h3>AI-Generated Trend Observations</h3>
+                        </div>
+
+                        <span class="trend-ai-badge">
+                            ✨ OmniCare AI Insights
+                        </span>
+
+                    </div>
+
+                    <div class="trend-ai-list" id="trend-ai-list">
+
+                        {% if trend_data and trend_data.ai_observations %}
+
+                            {% for obs in trend_data.ai_observations %}
+
+                                <div class="trend-ai-item {{ obs.type }}">
+
+                                    <div class="trend-ai-icon">
+                                        {% if obs.type == 'alert' %}⚠️
+                                        {% elif obs.type == 'warning' %}🔶
+                                        {% elif obs.type == 'positive' %}🟢
+                                        {% else %}ℹ️{% endif %}
+                                    </div>
+
+                                    <div class="trend-ai-content">
+                                        <h4>{{ obs.title }}</h4>
+                                        <p>{{ obs.text }}</p>
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        {% else %}
+
+                            <div style="padding: 14px; color: #64748b; font-size: 13px;">
+                                No observations available for the active selection.
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="trend-ai-disclaimer">
+                        * OmniCare AI observations are algorithmic summaries strictly derived from documented measurements in authorized medical records. They are designed to support physician analysis and do not replace clinical judgment or constitute independent diagnosis.
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     HISTORICAL MEASUREMENTS TABLE
+                     ============================================= -->
+
+                <div class="trend-table-section">
+
+                    <div class="trend-table-card">
+
+                        <div class="trend-table-header">
+                            <h3>Chronological Measurement Log</h3>
+                            <p>Detailed breakdown of all validated observations in the active filter timeframe.</p>
+                        </div>
+
+                        <div class="trend-table-responsive">
+
+                            <table class="trend-measurements-table">
+
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Parameter</th>
+                                        <th>Value</th>
+                                        <th>Reference Range</th>
+                                        <th>Clinical Status</th>
+                                        <th>Source Record</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody id="trend-table-body">
+
+                                    {% if trend_data and trend_data.historical_table %}
+
+                                        {% for row in trend_data.historical_table %}
+
+                                            <tr>
+
+                                                <td class="trend-table-date">
+                                                    {{ row.formatted_date }}
+                                                </td>
+
+                                                <td class="trend-table-param">
+                                                    {{ row.param_name }}
+                                                </td>
+
+                                                <td class="trend-table-value">
+                                                    {{ row.value }} <span style="font-size: 11px; color: #64748b; font-weight: 600;">{{ row.unit }}</span>
+                                                </td>
+
+                                                <td style="color: #475569; font-size: 12px;">
+                                                    {{ row.reference_range }}
+                                                </td>
+
+                                                <td>
+                                                    <span class="trend-status-badge {{ row.danger_level }}">
+                                                        {{ row.danger_label }}
+                                                    </span>
+                                                </td>
+
+                                                <td class="trend-table-record" title="{{ row.record_title }}">
+                                                    <strong>{{ row.record_title }}</strong>
+                                                    <div style="font-size: 11px; color: #64748b;">{{ row.record_type }}</div>
+                                                </td>
+
+                                                <td>
+                                                    {% if row.record_id and patient.id %}
+                                                        <a href="{{ url_for('doctor_view_medical_record', patient_id=patient.id, record_id=row.record_id) }}"
+                                                           target="_blank"
+                                                           rel="noopener noreferrer"
+                                                           class="trend-table-action-btn">
+                                                            📄 View Original
+                                                        </a>
+                                                    {% else %}
+                                                        <span style="color: #94a3b8; font-size: 11px;">Unavailable</span>
+                                                    {% endif %}
+                                                </td>
+
+                                            </tr>
+
+                                        {% endfor %}
+
+                                    {% else %}
+
+                                        <tr>
+                                            <td colspan="7" style="text-align: center; padding: 28px; color: #64748b;">
+                                                No historical measurements match the active parameters and date filter.
+                                            </td>
+                                        </tr>
+
+                                    {% endif %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =====================================================
+         MEDICAL CONFLICT ALERTS TAB
+         ===================================================== -->
+
+    <div id="medical-conflicts-tab"
+         class="workspace-tab-content">
+
+        <div class="medical-conflicts-section">
+
+            <!-- HEADER -->
+            <div class="medical-conflicts-header">
+
+                <div>
+                    <h3>⚠️ Medical Conflict Alerts</h3>
+
+                    <p>
+                        {% if conflicts %}
+                            Possible medication changes or inconsistencies detected across the patient's authorized records.
+                        {% else %}
+                            OmniCare AI found no obvious inconsistencies across the available records.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div class="conflict-count-badge">
+                    {{ conflicts|length }}
+                </div>
+
+            </div>
+
+            <!-- CLINICAL VERIFICATION NOTICE -->
+            <div class="conflict-verification-note section-notice">
+                <span>ℹ️</span>
+                <p>
+                    <strong>Clinical Verification Notice:</strong> OmniCare AI detected alerts are automated aids to highlight possible inconsistencies. All potential conflicts and changes must be checked and confirmed against original medical records before any clinical decisions are made.
+                </p>
+            </div>
+
+            {% if conflicts %}
+
+                <div class="medical-conflicts-list">
+
+                    {% for conflict in conflicts %}
+
+                        <div class="medical-conflict-card severity-{{ conflict.get('severity', 'medium') }}">
+
+                            <!-- CONFLICT HEADER -->
+                            <div class="conflict-card-header">
+
+                                <div class="conflict-icon">
+                                    ⚠️
+                                </div>
+
+                                <div class="conflict-title-area">
+
+                                    <h4>
+                                        {{ conflict.get('title') or 'Possible Medical Conflict' }}
+                                    </h4>
+
+                                    <span class="conflict-severity">
+                                        {{ conflict.get('severity', 'medium')|upper }}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+<!-- DESCRIPTION: HIDE FOR LABORATORY COMPARISONS -->
+{% if conflict.get('conflict_type') != 'lab_result_discrepancy' %}
+    <div class="conflict-description">
+        <p>
+            {{ conflict.get('description') or 'A possible inconsistency was detected across medical records.' }}
+        </p>
+    </div>
+{% endif %}
+
+                            <!-- MEDICATION -->
+                            {% if conflict.get('medication_name') %}
+                                <div class="conflict-medication">
+                                    <span class="conflict-label">
+                                        💊 Medication
+                                    </span>
+                                    <strong>
+                                        {{ conflict.get('medication_name') }}
+                                    </strong>
+                                </div>
+                            {% endif %}
+
+                            <!-- MEDICATION CHANGE COMPARISON -->
+                            {% if conflict.get('conflict_type') == 'medication_change' %}
+
+                                <div class="conflict-sources">
+
+                                    <div class="conflict-label">
+                                        📄 Medication History Comparison
+                                    </div>
+
+                                    <div class="medication-change-comparison">
+
+                                        <!-- PREVIOUS RECORD -->
+                                        <div class="medication-change-card previous">
+
+                                            <div class="medication-change-label">
+                                                Previous Record
+                                            </div>
+
+                                            <div class="medication-change-date">
+                                                {% if conflict.get('change_from', {}).get('event_date') %}
+                                                    📅 {{ conflict.get('change_from').get('event_date') }}
+                                                {% else %}
+                                                    Date unavailable
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="medication-change-details">
+
+                                                {% if conflict.get('change_from', {}).get('dose') %}
+                                                    <div>
+                                                        <span>Dose</span>
+                                                        <strong>{{ conflict.get('change_from').get('dose') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_from', {}).get('frequency') %}
+                                                    <div>
+                                                        <span>Frequency</span>
+                                                        <strong>{{ conflict.get('change_from').get('frequency') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_from', {}).get('duration') %}
+                                                    <div>
+                                                        <span>Duration</span>
+                                                        <strong>{{ conflict.get('change_from').get('duration') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_from', {}).get('instructions') %}
+                                                    <div>
+                                                        <span>Instructions</span>
+                                                        <strong>{{ conflict.get('change_from').get('instructions') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_from', {}).get('provider_name') %}
+                                                    <div>
+                                                        <span>Doctor</span>
+                                                        <strong>{{ conflict.get('change_from').get('provider_name') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_from', {}).get('hospital_name') %}
+                                                    <div>
+                                                        <span>Hospital</span>
+                                                        <strong>{{ conflict.get('change_from').get('hospital_name') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                            </div>
+
+                                            {% if conflict.get('change_from', {}).get('medical_record_id') and patient.get('id') %}
+                                                <a href="{{ url_for('doctor_view_medical_record', patient_id=patient.get('id'), record_id=conflict.get('change_from').get('medical_record_id')) }}"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   class="conflict-view-original-btn">
+                                                    📄 View Original
+                                                </a>
+                                            {% else %}
+                                                <span class="conflict-original-unavailable">
+                                                    Original unavailable
+                                                </span>
+                                            {% endif %}
+
+                                        </div>
+
+                                        <!-- ARROW -->
+                                        <div class="medication-change-arrow">
+                                            →
+                                        </div>
+
+                                        <!-- NEWER RECORD -->
+                                        <div class="medication-change-card newer">
+
+                                            <div class="medication-change-label">
+                                                Newer Record
+                                            </div>
+
+                                            <div class="medication-change-date">
+                                                {% if conflict.get('change_to', {}).get('event_date') %}
+                                                    📅 {{ conflict.get('change_to').get('event_date') }}
+                                                {% else %}
+                                                    Date unavailable
+                                                {% endif %}
+                                            </div>
+
+                                            <div class="medication-change-details">
+
+                                                {% if conflict.get('change_to', {}).get('dose') %}
+                                                    <div>
+                                                        <span>Dose</span>
+                                                        <strong>{{ conflict.get('change_to').get('dose') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_to', {}).get('frequency') %}
+                                                    <div>
+                                                        <span>Frequency</span>
+                                                        <strong>{{ conflict.get('change_to').get('frequency') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_to', {}).get('duration') %}
+                                                    <div>
+                                                        <span>Duration</span>
+                                                        <strong>{{ conflict.get('change_to').get('duration') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_to', {}).get('instructions') %}
+                                                    <div>
+                                                        <span>Instructions</span>
+                                                        <strong>{{ conflict.get('change_to').get('instructions') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_to', {}).get('provider_name') %}
+                                                    <div>
+                                                        <span>Doctor</span>
+                                                        <strong>{{ conflict.get('change_to').get('provider_name') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if conflict.get('change_to', {}).get('hospital_name') %}
+                                                    <div>
+                                                        <span>Hospital</span>
+                                                        <strong>{{ conflict.get('change_to').get('hospital_name') }}</strong>
+                                                    </div>
+                                                {% endif %}
+
+                                            </div>
+
+                                            {% if conflict.get('change_to', {}).get('medical_record_id') and patient.get('id') %}
+                                                <a href="{{ url_for('doctor_view_medical_record', patient_id=patient.get('id'), record_id=conflict.get('change_to').get('medical_record_id')) }}"
+                                                   target="_blank"
+                                                   rel="noopener noreferrer"
+                                                   class="conflict-view-original-btn">
+                                                    📄 View Original
+                                                </a>
+                                            {% else %}
+                                                <span class="conflict-original-unavailable">
+                                                    Original unavailable
+                                                </span>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+   
+{% elif conflict.get('conflict_type') == 'lab_result_discrepancy' %}
+
+    <!-- LABORATORY RESULT COMPARISON -->
+    {% set lab_records = conflict.get('records') or [] %}
+
+    <div class="conflict-sources lab-compare-panel">
+        <div class="conflict-label">
+            🧪 Laboratory Result Comparison
+        </div>
+
+        <div class="lab-compare-grid">
+            {% for source in lab_records[:2] %}
+                <div class="lab-compare-item">
+
+                    <div class="lab-compare-content">
+                        <div class="lab-compare-details">
+
+                            <div class="lab-compare-label">
+                                {{ 'Earlier Record' if loop.first else 'Later Record' }}
+                            </div>
+
+                            <div class="lab-compare-date">
+                                {{ source.get('event_date') or 'Date unavailable' }}
+                            </div>
+
+                            <div class="lab-compare-test">
+                                {{ source.get('test_name') or conflict.get('lab_test_name', 'Laboratory test') }}
+                            </div>
+
+                            <div class="lab-compare-value">
+                                {% if source.get('raw_value') %}
+                                    {{ source.get('raw_value') }}
+                                {% elif source.get('value') is not none %}
+                                    {{ source.get('value') }}
+                                {% else %}
+                                    Value unavailable
+                                {% endif %}
+                                {{ source.get('unit', '') }}
+                            </div>
+
+                            {% if source.get('provider_name') %}
+                                <div class="lab-compare-meta">
+                                    {{ source.get('provider_name') }}
+                                </div>
+                            {% endif %}
+
+                            {% if source.get('hospital_name') %}
+                                <div class="lab-compare-meta">
+                                    {{ source.get('hospital_name') }}
+                                </div>
+                            {% endif %}
+
+                        </div>
+
+                        {% if source.get('medical_record_id') %}
+                            <div class="lab-compare-action">
+                                <a
+                                    href="{{ url_for(
+                                        'doctor_view_medical_record',
+                                        patient_id=patient.get('id'),
+                                        record_id=source.get('medical_record_id')
+                                    ) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="conflict-view-original-btn"
+                                >
+                                    📄 View Original
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+   
+
+{% else %}
+
+    <!-- OTHER CONFLICT TYPES -->
+    {% if conflict.get('records') %}
+
+
+                                    <div class="conflict-sources">
+
+                                        <div class="conflict-label">
+                                            📄 Documented Information
+                                        </div>
+
+                                        <div class="conflict-records">
+
+                                            {% for source in conflict.get('records') %}
+
+                                                <div class="conflict-record">
+
+                                                    <div class="conflict-record-date">
+                                                        {% if source.get('event_date') %}
+                                                            📅 {{ source.get('event_date') }}
+                                                        {% else %}
+                                                            Date unavailable
+                                                        {% endif %}
+                                                    </div>
+
+                                                    <div class="conflict-record-details">
+
+                                                        {% if source.get('dose') %}
+                                                            <strong>Dose: {{ source.get('dose') }}</strong>
+                                                        {% endif %}
+
+                                                        {% if source.get('frequency') %}
+                                                            <span>Frequency: {{ source.get('frequency') }}</span>
+                                                        {% endif %}
+
+                                                        {% if source.get('duration') %}
+                                                            <span>Duration: {{ source.get('duration') }}</span>
+                                                        {% endif %}
+
+                                                        {% if source.get('instructions') %}
+                                                            <span>Instructions: {{ source.get('instructions') }}</span>
+                                                        {% endif %}
+
+                                                        {% if source.get('provider_name') %}
+                                                            <span>Doctor: {{ source.get('provider_name') }}</span>
+                                                        {% endif %}
+
+                                                        {% if source.get('hospital_name') %}
+                                                            <span>Hospital: {{ source.get('hospital_name') }}</span>
+                                                        {% endif %}
+
+                                                    </div>
+
+                                                    {% if source.get('medical_record_id') and patient.get('id') %}
+                                                        <a href="{{ url_for('doctor_view_medical_record', patient_id=patient.get('id'), record_id=source.get('medical_record_id')) }}"
+                                                           target="_blank"
+                                                           rel="noopener noreferrer"
+                                                           class="conflict-view-original-btn">
+                                                            📄 View Original
+                                                        </a>
+                                                    {% else %}
+                                                        <span class="conflict-original-unavailable">
+                                                            Original unavailable
+                                                        </span>
+                                                    {% endif %}
+
+                                                </div>
+
+                                            {% endfor %}
+
+                                        </div>
+
+                                    </div>
+
+                                {% endif %}
+
+                            {% endif %}
+
+                            <!-- CARD VERIFICATION NOTE -->
+                            <div class="conflict-verification-note">
+                                <span>ℹ️</span>
+                                
+<p>
+    {% if conflict.get('conflict_type') == 'lab_result_discrepancy' %}
+        Laboratory results differ across records. Verify the original
+        reports, dates, units, and clinical context.
+    {% elif conflict.get('conflict_type') == 'same_day_medication_conflict' %}
+        Different medication instructions were recorded on the same date.
+        Verify the original prescriptions.
+    {% elif conflict.get('conflict_type') == 'medication_change' %}
+        A possible medication change was detected. Verify the original
+        prescriptions and confirm whether the change was intentional.
+    {% elif conflict.get('conflict_type') == 'possible_duplicate_medication' %}
+        A possible duplicate medication entry was detected. Check the
+        original records to determine whether it is a true duplicate.
+    {% else %}
+        A possible medical-record inconsistency was detected. Review the
+        original records before making a clinical decision.
+    {% endif %}
+</p>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <!-- EMPTY STATE -->
+                <div class="no-medical-conflicts">
+
+                    <div class="no-conflict-icon">
+                        ✅
+                    </div>
+
+                    <div>
+                        <h4>
+                            No Conflicts Detected
+                        </h4>
+                        <p>
+                            No obvious inconsistencies were identified in the available medical records.
+                            Please note that an absence of detected alerts does not guarantee that a patient is medically safe. Always cross-check clinical details with original documentation before making care decisions.
+                        </p>
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         AI ASSISTANT TAB
+         ===================================================== -->
+
+ <!-- =====================================================
+     AI ASSISTANT TAB
+     ===================================================== -->
+
+<div id="ai-assistant-tab"
+     class="workspace-tab-content">
+
+    <div class="doctor-ai-assistant">
+
+        <!-- =================================================
+             AI HEADER
+             ================================================= -->
+
+        <div class="doctor-ai-header">
+
+            <div class="doctor-ai-icon">
+                🤖
+            </div>
+
+            <div class="doctor-ai-header-text">
+
+                <h2>
+                    AI Health Assistant
+                </h2>
+
+                <p>
+                    Ask questions about this patient's
+                    authorized medical history.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             PATIENT CONTEXT
+             ================================================= -->
+
+        <div class="doctor-ai-context">
+
+            <div class="context-icon">
+                🔐
+            </div>
+
+            <div>
+
+                <strong>
+                    Authorized Patient Context
+                </strong>
+
+                <p>
+                    OmniCare AI uses only this patient's
+                    authorized clinical timeline to answer
+                    your questions.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             QUICK QUESTIONS
+             ================================================= -->
+
+        <div class="doctor-ai-quick-questions">
+
+            <h3>
+                Quick Questions
+            </h3>
+
+
+            <div class="quick-question-grid">
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="What are the patient's recent diagnoses?">
+
+                    <span class="quick-question-icon">
+                        🩺
+                    </span>
+
+                    <span>
+                        Recent diagnoses
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="What medications are documented in the patient's medical history?">
+
+                    <span class="quick-question-icon">
+                        💊
+                    </span>
+
+                    <span>
+                        Medications
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="What investigations are documented in the patient's records?">
+
+                    <span class="quick-question-icon">
+                        🧪
+                    </span>
+
+                    <span>
+                        Investigations
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="What is the latest medical event in this patient's timeline?">
+
+                    <span class="quick-question-icon">
+                        🕒
+                    </span>
+
+                    <span>
+                        Latest event
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="What follow-up information is documented for this patient?">
+
+                    <span class="quick-question-icon">
+                        📋
+                    </span>
+
+                    <span>
+                        Follow-ups
+                    </span>
+
+                </button>
+
+
+                <button
+                    type="button"
+                    class="quick-question"
+                    data-question="Give me a concise summary of the patient's documented medical history.">
+
+                    <span class="quick-question-icon">
+                        ✨
+                    </span>
+
+                    <span>
+                        Summarize history
+                    </span>
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             CHAT AREA
+             ================================================= -->
+
+        <div
+            id="doctor-ai-chat"
+            class="doctor-ai-chat">
+
+            <!-- INITIAL AI MESSAGE -->
+
+            <div class="ai-message">
+
+                <div class="ai-message-icon">
+                    🤖
+                </div>
+
+                <div class="ai-message-content">
+
+                    <strong>
+                        OmniCare AI
+                    </strong>
+
+                    <p>
+                        Hello, Doctor. I can help you understand
+                        this patient's authorized medical history.
+                        Ask me about diagnoses, medications,
+                        investigations, or follow-ups.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             LOADING INDICATOR
+             ================================================= -->
+
+        <div
+            id="doctor-ai-loading"
+            class="doctor-ai-loading"
+            style="display: none;">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+            <em>
+                OmniCare AI is reviewing the patient's
+                clinical timeline...
+            </em>
+
+        </div>
+
+
+        <!-- =================================================
+             QUESTION INPUT
+             ================================================= -->
+
+        <div class="doctor-ai-input-area">
+
+            <textarea
+                id="doctor-ai-question"
+                class="doctor-ai-input"
+                rows="2"
+                maxlength="1000"
+                placeholder="Ask about this patient's medical history..."></textarea>
+
+
+            <button
+                type="button"
+                id="doctor-ai-send"
+                class="doctor-ai-send">
+
+                <span>
+                    Ask AI
+                </span>
+
+                <span>
+                    ➤
+                </span>
+
+            </button>
+
+        </div>
+
+
+        <!-- =================================================
+             DISCLAIMER
+             ================================================= -->
+
+        <div class="doctor-ai-disclaimer">
+
+            <span>
+                ℹ️
+            </span>
+
+            <span>
+                AI responses are based only on the documented
+                authorized patient records. Verify important
+                information against the original medical record.
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+
+<!-- =========================================================
+     CHART.JS CDN
+     ========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     ========================================================= -->
+
+<div
+    id="workspace-config"
+    data-patient-id="{{ patient.get('id', '') | e }}"
+    hidden>
+</div>
+
+<div
+    id="trend-data-json"
+    data-json='{{ (trend_data or {}) | tojson | forceescape }}'
+    hidden>
+</div>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    /* =====================================================
+       WORKSPACE TABS
+       ===================================================== */
+
+    const navItems =
+        document.querySelectorAll(
+            ".workspace-nav-item"
+        );
+
+    const tabContents =
+        document.querySelectorAll(
+            ".workspace-tab-content"
+        );
+
+    function switchWorkspaceTab(targetId) {
+        if (!targetId) {
+            console.warn("[OmniCare AI] Tab switch requested with empty target ID.");
+            return false;
+        }
+
+        const targetPanel =
+            document.getElementById(
+                targetId
+            );
+
+        if (!targetPanel) {
+            console.warn(
+                "[OmniCare AI] Target tab panel not found for ID:",
+                targetId
+            );
+            return false;
+        }
+
+        let foundNav = false;
+
+        navItems.forEach(function (nav) {
+            if (nav.getAttribute("data-tab") === targetId) {
+                nav.classList.add("active");
+                foundNav = true;
+            } else {
+                nav.classList.remove("active");
+            }
+        });
+
+        tabContents.forEach(function (tab) {
+            tab.classList.remove("active");
+        });
+
+        targetPanel.classList.add("active");
+
+        if (targetId === "trend-analysis-tab") {
+            if (typeof window.onTrendTabActivated === "function") {
+                window.onTrendTabActivated();
+            }
+        }
+
+        if (!foundNav) {
+            console.warn(
+                "[OmniCare AI] No navigation button matches data-tab:",
+                targetId
+            );
+        }
+
+        return true;
+    }
+
+    navItems.forEach(function (item) {
+        item.addEventListener("click", function () {
+            const targetId =
+                item.getAttribute("data-tab");
+            switchWorkspaceTab(targetId);
+        });
+    });
+
+    // Initialize the active tab on page load
+    const activeNav =
+        document.querySelector(".workspace-nav-item.active") ||
+        navItems[0];
+
+    if (activeNav) {
+        const initialTabId =
+            activeNav.getAttribute("data-tab");
+        switchWorkspaceTab(initialTabId);
+    }
+/* =====================================================
+       TIMELINE FILTERS
+       ===================================================== */
+
+    const filterButtons =
+        document.querySelectorAll(
+            ".timeline-filter"
+        );
+
+    const timelineEvents =
+        document.querySelectorAll(
+            ".timeline-event"
+        );
+
+
+    filterButtons.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const selectedFilter =
+                        button.getAttribute(
+                            "data-filter"
+                        );
+
+
+                    filterButtons.forEach(
+                        function (btn) {
+
+                            btn.classList.remove(
+                                "active"
+                            );
+
+                        }
+                    );
+
+
+                    button.classList.add(
+                        "active"
+                    );
+
+
+                    timelineEvents.forEach(
+                        function (event) {
+
+                            const eventType =
+                                event.getAttribute(
+                                    "data-event-type"
+                                );
+
+
+                            if (
+                                selectedFilter === "all" ||
+                                selectedFilter === eventType
+                            ) {
+
+                                event.classList.remove(
+                                    "hidden-event"
+                                );
+
+                            } else {
+
+                                event.classList.add(
+                                    "hidden-event"
+                                );
+
+                            }
+
+                        }
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+
+    /* =====================================================
+       DOCTOR AI HEALTH ASSISTANT
+       ===================================================== */
+
+    const doctorAIQuestion =
+        document.getElementById(
+            "doctor-ai-question"
+        );
+
+
+    const doctorAISend =
+        document.getElementById(
+            "doctor-ai-send"
+        );
+
+
+    const doctorAIChat =
+        document.getElementById(
+            "doctor-ai-chat"
+        );
+
+
+    const doctorAILoading =
+        document.getElementById(
+            "doctor-ai-loading"
+        );
+
+
+    const quickQuestions =
+        document.querySelectorAll(
+            ".quick-question"
+        );
+
+
+
+    /* =====================================================
+       PATIENT ID
+       ===================================================== */
+
+    const doctorAIPatientId =
+        "{{ patient.get('id') }}";
+
+
+
+    /* =====================================================
+       ESCAPE HTML
+       ===================================================== */
+
+    function escapeDoctorAIHTML(text) {
+
+        const div =
+            document.createElement(
+                "div"
+            );
+
+        div.textContent =
+            text;
+
+        return div.innerHTML;
+
+    }
+
+
+
+    /* =====================================================
+       FORMAT AI ANSWER
+       ===================================================== */
+
+function formatDoctorAIAnswer(text) {
+    if (!text) return "";
+
+    let safeText = escapeDoctorAIHTML(text);
+    safeText = safeText.replace(/\r\n?/g, "\n");
+
+    // Remove standalone Markdown separators and stray asterisks
+    safeText = safeText.replace(/^\s*(?:\*{1,3}|_{3,}|-{3,})\s*$/gm, "");
+
+    // Format headings and bold text
+    safeText = safeText.replace(/^#{1,3}\s+(.+)$/gm, "<h4>$1</h4>");
+    safeText = safeText.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+
+    const lines = safeText.split("\n");
+    const output = [];
+    let listItems = [];
+
+    function flushList() {
+        if (listItems.length) {
+            output.push(
+                '<ul class="doctor-ai-list">' +
+                listItems.map(item => `<li>${item}</li>`).join("") +
+                "</ul>"
+            );
+            listItems = [];
+        }
+    }
+
+    for (const rawLine of lines) {
+        const line = rawLine.trim();
+
+        if (!line) {
+            flushList();
+            continue;
+        }
+
+        // Handle bullet points, including a single stray asterisk
+        const bulletMatch = line.match(/^[*+-]\s+(.+)$/);
+
+        if (bulletMatch) {
+            listItems.push(bulletMatch[1]);
+        } else {
+            flushList();
+            output.push(`<p>${line}</p>`);
+        }
+    }
+
+    flushList();
+    return output.join("");
+}
+
+
+    /* =====================================================
+       ADD DOCTOR MESSAGE
+       ===================================================== */
+
+    function addDoctorUserMessage(
+        question
+    ) {
+
+        if (!doctorAIChat) {
+            return;
+        }
+
+
+        const message =
+            document.createElement(
+                "div"
+            );
+
+
+        message.className =
+            "doctor-user-message";
+
+
+        message.innerHTML = `
+
+            <div class="doctor-user-message-content">
+
+                <strong>
+                    You
+                </strong>
+
+                <p>
+                    ${escapeDoctorAIHTML(question)}
+                </p>
+
+            </div>
+
+            <div class="doctor-user-message-icon">
+                👨‍⚕️
+            </div>
+
+        `;
+
+
+        doctorAIChat.appendChild(
+            message
+        );
+
+
+        doctorAIChat.scrollTop =
+            doctorAIChat.scrollHeight;
+
+    }
+
+
+
+    /* =====================================================
+       ADD AI MESSAGE
+       ===================================================== */
+
+    function addDoctorAIMessage(
+        answer
+    ) {
+
+        if (!doctorAIChat) {
+            return;
+        }
+
+
+        const message =
+            document.createElement(
+                "div"
+            );
+
+
+        message.className =
+            "ai-message";
+
+
+        message.innerHTML = `
+
+            <div class="ai-message-icon">
+                🤖
+            </div>
+
+            <div class="ai-message-content">
+
+                <strong>
+                    OmniCare AI
+                </strong>
+
+                <p>
+                    ${formatDoctorAIAnswer(answer)}
+                </p>
+
+            </div>
+
+        `;
+
+
+        doctorAIChat.appendChild(
+            message
+        );
+
+
+        doctorAIChat.scrollTop =
+            doctorAIChat.scrollHeight;
+
+    }
+
+
+/* =====================================================
+   ADD AI SOURCE RECORDS
+   ===================================================== */
+
+function addDoctorAISources(
+    sources
+) {
+
+    if (
+        !doctorAIChat ||
+        !sources ||
+        !sources.length
+    ) {
+        return;
+    }
+
+
+    const sourceContainer =
+        document.createElement(
+            "div"
+        );
+
+
+    sourceContainer.className =
+        "doctor-ai-sources";
+
+
+    let sourceHTML = `
+
+        <div class="doctor-ai-sources-header">
+
+            <strong>
+                📚 Source Records
+            </strong>
+
+            <span>
+                Verify the AI response against the original medical record.
+            </span>
+
+        </div>
+
+
+        <div class="doctor-ai-source-list">
+
+    `;
+
+
+    sources.forEach(
+        function (source) {
+
+            sourceHTML += `
+
+                <div class="doctor-ai-source-card">
+
+                    <div class="doctor-ai-source-info">
+
+
+                        <div class="doctor-ai-source-title">
+
+                            📄
+
+                            ${escapeDoctorAIHTML(
+                                source.event_type ||
+                                "Medical Record"
+                            )}
+
+                        </div>
+
+
+                        ${
+                            source.event_date
+                            ? `
+
+                                <div class="doctor-ai-source-detail">
+
+                                    📅
+
+                                    ${escapeDoctorAIHTML(
+                                        source.event_date
+                                    )}
+
+                                </div>
+
+                              `
+                            : ""
+                        }
+
+
+                        ${
+                            source.hospital_name
+                            ? `
+
+                                <div class="doctor-ai-source-detail">
+
+                                    🏥
+
+                                    ${escapeDoctorAIHTML(
+                                        source.hospital_name
+                                    )}
+
+                                </div>
+
+                              `
+                            : ""
+                        }
+
+
+                        ${
+                            source.provider_name
+                            ? `
+
+                                <div class="doctor-ai-source-detail">
+
+                                    👨‍⚕️
+
+                                    ${escapeDoctorAIHTML(
+                                        source.provider_name
+                                    )}
+
+                                </div>
+
+                              `
+                            : ""
+                        }
+
+
+                    </div>
+
+
+                    ${
+                        source.view_url
+                        ? `
+
+                            <a
+                                href="${source.view_url}"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="doctor-ai-source-button"
+                            >
+
+                                📄 View Original
+
+                            </a>
+
+                          `
+                        : ""
+                    }
+
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    sourceHTML += `
+
+        </div>
+
+    `;
+
+
+    sourceContainer.innerHTML =
+        sourceHTML;
+
+
+    doctorAIChat.appendChild(
+        sourceContainer
+    );
+
+
+    doctorAIChat.scrollTop =
+        doctorAIChat.scrollHeight;
+
+}
+    /* =====================================================
+       ASK DOCTOR AI
+       ===================================================== */
+
+ /* =====================================================
+   ASK DOCTOR AI
+   ===================================================== */
+
+async function askDoctorAI(
+    question
+) {
+
+    question =
+        question.trim();
+
+
+    if (!question) {
+
+        return;
+
+    }
+
+
+    /* -------------------------------------------------
+       CHECK REQUIRED ELEMENTS
+       ------------------------------------------------- */
+
+    if (
+        !doctorAIQuestion ||
+        !doctorAISend ||
+        !doctorAIChat
+    ) {
+
+        console.error(
+            "Doctor AI elements not found."
+        );
+
+        return;
+
+    }
+
+
+    /* -------------------------------------------------
+       SHOW DOCTOR QUESTION
+       ------------------------------------------------- */
+
+    addDoctorUserMessage(
+        question
+    );
+
+
+    /* -------------------------------------------------
+       CLEAR INPUT
+       ------------------------------------------------- */
+
+    doctorAIQuestion.value =
+        "";
+
+
+    /* -------------------------------------------------
+       DISABLE INPUT
+       ------------------------------------------------- */
+
+    doctorAISend.disabled =
+        true;
+
+    doctorAIQuestion.disabled =
+        true;
+
+
+    /* -------------------------------------------------
+       SHOW LOADING
+       ------------------------------------------------- */
+
+    if (doctorAILoading) {
+
+        doctorAILoading.style.display =
+            "flex";
+
+    }
+
+
+    try {
+
+        /* ---------------------------------------------
+           DEBUG
+           --------------------------------------------- */
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "OMNICARE AI REQUEST"
+        );
+
+        console.log(
+            "Patient ID:",
+            doctorAIPatientId
+        );
+
+        console.log(
+            "Question:",
+            question
+        );
+
+        console.log(
+            "================================"
+        );
+
+
+        /* ---------------------------------------------
+           SEND AI REQUEST TO FLASK
+           --------------------------------------------- */
+
+        const response =
+            await fetch(
+                `/doctor/patient-workspace/${doctorAIPatientId}/ai-assistant`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        question:
+                            question
+                    })
+                }
+            );
+
+
+        console.log(
+            "AI HTTP Status:",
+            response.status
+        );
+
+
+        /* ---------------------------------------------
+           READ AI RESPONSE
+           --------------------------------------------- */
+
+        const data =
+            await response.json();
+
+
+        console.log(
+            "AI Server Response:",
+            data
+        );
+
+
+        /* ---------------------------------------------
+           CHECK AI RESPONSE
+           --------------------------------------------- */
+
+        if (
+            !response.ok ||
+            !data.success
+        ) {
+
+            throw new Error(
+                data.message ||
+                "Unable to get AI response."
+            );
+
+        }
+
+
+        /* ---------------------------------------------
+           SHOW AI ANSWER
+           --------------------------------------------- */
+
+        addDoctorAIMessage(
+            data.answer
+        );
+
+
+        /* =================================================
+           LOAD SOURCE RECORDS
+           ================================================= */
+
+        console.log(
+            "================================"
+        );
+
+        console.log(
+            "LOADING AI SOURCE RECORDS"
+        );
+
+        console.log(
+            "Patient ID:",
+            doctorAIPatientId
+        );
+
+        console.log(
+            "================================"
+        );
+
+
+        try {
+
+            /* -----------------------------------------
+               SOURCE API URL
+               ----------------------------------------- */
+
+            const sourceURL =
+                `/doctor/patient-workspace/${doctorAIPatientId}/ai-sources`;
+
+
+            console.log(
+                "Source URL:",
+                sourceURL
+            );
+
+
+            /* -----------------------------------------
+               REQUEST SOURCE RECORDS
+               ----------------------------------------- */
+
+            const sourceResponse =
+                await fetch(
+                    sourceURL,
+                    {
+                        method: "GET",
+
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            console.log(
+                "Source HTTP Status:",
+                sourceResponse.status
+            );
+
+
+            /* -----------------------------------------
+               READ SOURCE RESPONSE
+               ----------------------------------------- */
+
+            const sourceData =
+                await sourceResponse.json();
+
+
+            console.log(
+                "AI SOURCE RESPONSE:",
+                sourceData
+            );
+
+
+            /* -----------------------------------------
+               CHECK SOURCE RESPONSE
+               ----------------------------------------- */
+
+            if (
+                !sourceResponse.ok
+            ) {
+
+                console.error(
+                    "Source request failed."
+                );
+
+                console.error(
+                    "HTTP Status:",
+                    sourceResponse.status
+                );
+
+                console.error(
+                    "Server Response:",
+                    sourceData
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !sourceData.success
+            ) {
+
+                console.error(
+                    "Source endpoint returned an error."
+                );
+
+                console.error(
+                    "Message:",
+                    sourceData.message
+                );
+
+                return;
+
+            }
+
+
+            /* -----------------------------------------
+               CHECK SOURCE ARRAY
+               ----------------------------------------- */
+
+            const sources =
+                sourceData.sources || [];
+
+
+            console.log(
+                "Number of source records:",
+                sources.length
+            );
+
+
+            /* -----------------------------------------
+               DISPLAY SOURCE RECORDS
+               ----------------------------------------- */
+
+            if (
+                sources.length > 0
+            ) {
+
+                console.log(
+                    "Displaying source records..."
+                );
+
+                addDoctorAISources(
+                    sources
+                );
+
+            } else {
+
+                console.warn(
+                    "No source records were returned."
+                );
+
+
+                /* -------------------------------------
+                   OPTIONAL EMPTY SOURCE MESSAGE
+                   ------------------------------------- */
+
+                if (doctorAIChat) {
+
+                    const emptySource =
+                        document.createElement(
+                            "div"
+                        );
+
+
+                    emptySource.className =
+                        "doctor-ai-sources";
+
+
+                    emptySource.innerHTML = `
+                        <div class="doctor-ai-sources-header">
+                            <strong>
+                                📚 Source Records
+                            </strong>
+
+                            <span>
+                                No linked source records were found for this patient.
+                            </span>
+                        </div>
+                    `;
+
+
+                    doctorAIChat.appendChild(
+                        emptySource
+                    );
+
+
+                    doctorAIChat.scrollTop =
+                        doctorAIChat.scrollHeight;
+
+                }
+
+            }
+
+
+        } catch (sourceError) {
+
+            console.error(
+                "================================"
+            );
+
+            console.error(
+                "AI SOURCE FETCH ERROR"
+            );
+
+            console.error(
+                sourceError
+            );
+
+            console.error(
+                "================================"
+            );
+
+
+            /* -----------------------------------------
+               DO NOT BREAK THE AI ANSWER
+               ----------------------------------------- */
+
+        }
+
+
+    } catch (error) {
+
+        /* ---------------------------------------------
+           MAIN AI ERROR
+           --------------------------------------------- */
+
+        console.error(
+            "================================"
+        );
+
+        console.error(
+            "DOCTOR AI ERROR"
+        );
+
+        console.error(
+            error
+        );
+
+        console.error(
+            "================================"
+        );
+
+
+        addDoctorAIMessage(
+            "I could not process your request right now. Please try again."
+        );
+
+
+    } finally {
+
+        /* ---------------------------------------------
+           HIDE LOADING
+           --------------------------------------------- */
+
+        if (doctorAILoading) {
+
+            doctorAILoading.style.display =
+                "none";
+
+        }
+
+
+        /* ---------------------------------------------
+           ENABLE INPUT
+           --------------------------------------------- */
+
+        doctorAISend.disabled =
+            false;
+
+        doctorAIQuestion.disabled =
+            false;
+
+
+        doctorAIQuestion.focus();
+
+    }
+
+}
+    /* =====================================================
+       ASK AI BUTTON
+       ===================================================== */
+
+    if (doctorAISend) {
+
+        doctorAISend.addEventListener(
+            "click",
+            function () {
+
+                askDoctorAI(
+                    doctorAIQuestion.value
+                );
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       ENTER TO SEND
+       SHIFT + ENTER = NEW LINE
+       ===================================================== */
+
+    if (doctorAIQuestion) {
+
+        doctorAIQuestion.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Enter" &&
+                    !event.shiftKey
+                ) {
+
+                    event.preventDefault();
+
+
+                    askDoctorAI(
+                        doctorAIQuestion.value
+                    );
+
+                }
+
+            }
+        );
+
+    }
+
+
+
+    /* =====================================================
+       QUICK QUESTIONS
+       ===================================================== */
+
+    quickQuestions.forEach(
+        function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const question =
+                        button.getAttribute(
+                            "data-question"
+                        );
+
+
+                    if (!question) {
+                        return;
+                    }
+
+
+                    if (doctorAIQuestion) {
+
+                        doctorAIQuestion.value =
+                            question;
+
+                    }
+
+
+                    askDoctorAI(
+                        question
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+    /* =====================================================
+       TREND ANALYSIS CONTROLLER
+       ===================================================== */
+
+    const workspaceConfig = document.getElementById("workspace-config");
+    const patientId = workspaceConfig
+        ? (workspaceConfig.dataset.patientId || "")
+        : "";
+
+    const trendDataElement = document.getElementById("trend-data-json");
+    let initialTrendData = {};
+
+    try {
+        initialTrendData = JSON.parse(
+            trendDataElement ? (trendDataElement.dataset.json || "{}") : "{}"
+        );
+    } catch (error) {
+        console.error("Unable to parse trend data:", error);
+        initialTrendData = {};
+    }
+
+    let currentTrendData = initialTrendData;
+    let chartInstances = {};
+
+    // DOM Elements
+    const trendDropdownToggle = document.getElementById("trend-dropdown-toggle");
+    const trendDropdownMenu = document.getElementById("trend-dropdown-menu");
+    const trendSelectedBadge = document.getElementById("trend-selected-badge");
+    const trendSelectedLabelText = document.getElementById("trend-dropdown-label-text");
+    const trendCheckboxes = document.querySelectorAll(".trend-param-checkbox");
+    const trendPeriodBtns = document.querySelectorAll(".trend-period-btn");
+    const trendApplyBtn = document.getElementById("trend-apply-filters-btn");
+    const trendResetBtn = document.getElementById("trend-reset-filters-btn");
+    const trendSelectTrendsBtn = document.getElementById("trend-select-trends-btn");
+    const trendSelectAllBtn = document.getElementById("trend-select-all-btn");
+    const trendClearAllBtn = document.getElementById("trend-clear-all-btn");
+
+    const trendChartsGrid = document.getElementById("trend-charts-grid");
+    const trendSummaryGrid = document.getElementById("trend-summary-grid");
+    const trendAIList = document.getElementById("trend-ai-list");
+    const trendTableBody = document.getElementById("trend-table-body");
+
+    // 1. Dropdown Toggle & Outside Click
+    if (trendDropdownToggle && trendDropdownMenu) {
+        trendDropdownToggle.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const isOpen = trendDropdownMenu.classList.contains("show");
+            if (isOpen) {
+                trendDropdownMenu.classList.remove("show");
+                trendDropdownToggle.setAttribute("aria-expanded", "false");
+            } else {
+                trendDropdownMenu.classList.add("show");
+                trendDropdownToggle.setAttribute("aria-expanded", "true");
+            }
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!trendDropdownMenu.contains(e.target) && !trendDropdownToggle.contains(e.target)) {
+                trendDropdownMenu.classList.remove("show");
+                trendDropdownToggle.setAttribute("aria-expanded", "false");
+            }
+        });
+    }
+
+    // 2. Update Selected Count in Dropdown
+    function updateDropdownSelectionCount() {
+        const checked = document.querySelectorAll(".trend-param-checkbox:checked");
+        const count = checked.length;
+        if (trendSelectedBadge) {
+            trendSelectedBadge.textContent = count;
+        }
+        if (trendSelectedLabelText) {
+            trendSelectedLabelText.textContent = count > 0 ? `${count} Selected` : "Select Parameters";
+        }
+    }
+
+    trendCheckboxes.forEach(function (cb) {
+        cb.addEventListener("change", updateDropdownSelectionCount);
+    });
+
+    // 3. Quick Action Buttons
+    if (trendSelectTrendsBtn) {
+        trendSelectTrendsBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            const options = document.querySelectorAll(".trend-checkbox-option");
+            options.forEach(function (opt) {
+                const cb = opt.querySelector(".trend-param-checkbox");
+                if (cb) {
+                    cb.checked = opt.getAttribute("data-sufficient") === "true";
+                }
+            });
+            updateDropdownSelectionCount();
+        });
+    }
+
+    if (trendSelectAllBtn) {
+        trendSelectAllBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            trendCheckboxes.forEach(function (cb) { cb.checked = true; });
+            updateDropdownSelectionCount();
+        });
+    }
+
+    if (trendClearAllBtn) {
+        trendClearAllBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            trendCheckboxes.forEach(function (cb) { cb.checked = false; });
+            updateDropdownSelectionCount();
+        });
+    }
+
+    // 4. Period Buttons
+    trendPeriodBtns.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            trendPeriodBtns.forEach(function (b) { b.classList.remove("active"); });
+            btn.classList.add("active");
+        });
+    });
+
+    function getSelectedPeriod() {
+        const activeBtn = document.querySelector(".trend-period-btn.active");
+        return activeBtn ? activeBtn.getAttribute("data-period") : "all";
+    }
+
+    function getSelectedParameterKeys() {
+        const checked = document.querySelectorAll(".trend-param-checkbox:checked");
+        return Array.from(checked).map(function (cb) { return cb.value; });
+    }
+
+    // 5. Chart.js Line Chart Rendering
+    function destroyAllCharts() {
+        Object.keys(chartInstances).forEach(function (key) {
+            if (chartInstances[key]) {
+                try {
+                    chartInstances[key].destroy();
+                } catch (e) {
+                    console.warn("Chart destroy error:", e);
+                }
+            }
+        });
+        chartInstances = {};
+    }
+
+    function renderTrendCharts(chartsData) {
+        if (!chartsData || typeof Chart === "undefined") {
+            return;
+        }
+
+        Object.keys(chartsData).forEach(function (key) {
+            const chartData = chartsData[key];
+            if (!chartData || !chartData.has_sufficient_data) {
+                return;
+            }
+
+            const canvas = document.getElementById("canvas-" + key);
+            if (!canvas) {
+                return;
+            }
+
+            // Destroy previous instance if any
+            if (chartInstances[key]) {
+                try {
+                    chartInstances[key].destroy();
+                } catch (e) {}
+            }
+
+            const ctx = canvas.getContext("2d");
+            const isDual = chartData.datasets && chartData.datasets.length > 1;
+
+            chartInstances[key] = new Chart(ctx, {
+                type: "line",
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: "index",
+                        intersect: false
+                    },
+                    plugins: {
+                        legend: {
+                            display: isDual,
+                            position: "top",
+                            labels: {
+                                boxWidth: 12,
+                                font: {
+                                    weight: "bold",
+                                    size: 11
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: "rgba(18, 63, 99, 0.95)",
+                            titleFont: { size: 12, weight: "bold" },
+                            bodyFont: { size: 12 },
+                            padding: 10,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function (context) {
+                                    const ds = context.dataset;
+                                    const val = context.parsed.y;
+                                    const unit = chartData.unit || "";
+                                    return " " + (ds.label || "") + ": " + val + " " + unit;
+                                },
+                                afterLabel: function (context) {
+                                    const idx = context.dataIndex;
+                                    const meta = chartData.meta && chartData.meta[idx];
+                                    if (meta) {
+                                        let lines = [];
+                                        if (meta.danger_label) {
+                                            lines.push("Status: [" + meta.danger_label + "]");
+                                        }
+                                        if (meta.danger_reason) {
+                                            lines.push("Note: " + meta.danger_reason);
+                                        }
+                                        return lines;
+                                    }
+                                    return "";
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                color: "#f1f5f9"
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: "600"
+                                },
+                                color: "#64748b"
+                            }
+                        },
+                        y: {
+                            grid: {
+                                color: "#e2e8f0"
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: "600"
+                                },
+                                color: "#64748b"
+                            },
+                            title: {
+                                display: true,
+                                text: chartData.unit,
+                                color: "#64748b",
+                                font: { size: 11, weight: "bold" }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    }
+
+    // 6. Tab Activation Hook
+    window.onTrendTabActivated = function () {
+        setTimeout(function () {
+            if (currentTrendData && currentTrendData.charts) {
+                renderTrendCharts(currentTrendData.charts);
+            }
+        }, 80);
+    };
+
+    // Initial render if trend tab is active
+    const currentActiveNav = document.querySelector(".workspace-nav-item.active");
+    if (currentActiveNav && currentActiveNav.getAttribute("data-tab") === "trend-analysis-tab") {
+        window.onTrendTabActivated();
+    }
+
+    // 7. Dynamic DOM Rendering Helpers
+    function renderSummariesHTML(summaries) {
+        if (!trendSummaryGrid) return;
+        if (!summaries || summaries.length === 0) {
+            trendSummaryGrid.innerHTML = `
+                <div class="trend-empty-state" style="grid-column: 1 / -1;">
+                    <div class="trend-empty-icon">📂</div>
+                    <h3>No Parameter Summaries</h3>
+                    <p>No measurements match the currently selected parameters or date range.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = "";
+        summaries.forEach(function (s) {
+            const arrow = s.change_direction === "up" ? "↗" : (s.change_direction === "down" ? "↘" : "→");
+            const changeHtml = s.has_sufficient_data && s.change_text ?
+                '<span class="trend-change-badge ' + s.change_direction + '">' + arrow + ' ' + escapeHtml(s.change_text) + (s.pct_change ? ' (' + escapeHtml(s.pct_change) + ')' : '') + '</span>' :
+                '<span style="color: #94a3b8; font-weight: 600;">Single reading</span>';
+
+            html += `
+                <div class="trend-summary-card">
+                    <div class="trend-summary-top">
+                        <div>
+                            <h4 class="trend-summary-name">${escapeHtml(s.param_name)}</h4>
+                            <span class="trend-summary-category">${escapeHtml(s.category)}</span>
+                        </div>
+                        <span class="trend-status-badge ${escapeHtml(s.danger_level)}">
+                            ${escapeHtml(s.danger_label)}
+                        </span>
+                    </div>
+                    <div class="trend-summary-value-area">
+                        <span class="trend-summary-number">${s.latest_value}</span>
+                        <span class="trend-summary-unit">${escapeHtml(s.unit)}</span>
+                    </div>
+                    <div class="trend-summary-bottom">
+                        <div>${changeHtml}</div>
+                        <span class="trend-summary-date">${escapeHtml(s.latest_date_formatted)}</span>
+                    </div>
+                </div>
+            `;
+        });
+        trendSummaryGrid.innerHTML = html;
+    }
+
+    function renderChartsHTML(charts) {
+        if (!trendChartsGrid) return;
+        destroyAllCharts();
+
+        const keys = Object.keys(charts || {});
+        if (keys.length === 0) {
+            trendChartsGrid.innerHTML = `
+                <div class="trend-empty-state" style="grid-column: 1 / -1;">
+                    <div class="trend-empty-icon">📈</div>
+                    <h3>No Trend Charts Available</h3>
+                    <p>Select at least one health parameter above to display its trend chart.</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = "";
+        keys.forEach(function (key) {
+            const chart = charts[key];
+            if (chart.has_sufficient_data) {
+                const dangerBadge = chart.latest_danger_level ?
+                    '<span class="trend-status-badge ' + escapeHtml(chart.latest_danger_level) + '">' + escapeHtml(chart.latest_danger_label) + ': ' + chart.latest_value + ' ' + escapeHtml(chart.unit) + '</span>' : "";
+
+                html += `
+                    <div class="trend-chart-card" data-card-key="${key}">
+                        <div class="trend-chart-header">
+                            <div>
+                                <h4 class="trend-chart-title">${escapeHtml(chart.param_name)}</h4>
+                                <p class="trend-chart-ref-range">Reference: ${escapeHtml(chart.reference_range)}</p>
+                            </div>
+                            ${dangerBadge}
+                        </div>
+                        <div class="trend-chart-canvas-wrapper">
+                            <canvas id="canvas-${key}" data-key="${key}"></canvas>
+                        </div>
+                        <div class="trend-chart-footer">
+                            <div class="trend-chart-clinical-note">
+                                <span>ℹ️</span>
+                                <span>${escapeHtml(chart.latest_danger_reason || "Plotted from authorized records.")}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                const singleMeta = chart.meta && chart.meta[0];
+                const recordLink = singleMeta && singleMeta.record_id ?
+                    '<a href="/doctor/patient-record/' + patientId + '/' + singleMeta.record_id + '" target="_blank" rel="noopener noreferrer" class="trend-chart-source-link">📄 View Source Report</a>' : "";
+
+                html += `
+                    <div class="trend-chart-card" data-card-key="${key}">
+                        <div class="trend-chart-header">
+                            <div>
+                                <h4 class="trend-chart-title">${escapeHtml(chart.param_name)}</h4>
+                                <p class="trend-chart-ref-range">Reference: ${escapeHtml(chart.reference_range)}</p>
+                            </div>
+                            <span class="trend-status-badge gray">Single Observation</span>
+                        </div>
+                        <div class="trend-single-measurement-box">
+                            <div class="trend-single-value">
+                                ${chart.latest_value !== undefined ? chart.latest_value : (singleMeta ? singleMeta.value : "N/A")}
+                                <span style="font-size: 16px; color: #64748b;">${escapeHtml(chart.unit)}</span>
+                            </div>
+                            <div class="trend-single-meta">
+                                Recorded on ${chart.labels && chart.labels[0] ? escapeHtml(chart.labels[0]) : "N/A"}
+                                ${singleMeta && singleMeta.danger_label ? ' &bull; <strong style="color: #123f63;">' + escapeHtml(singleMeta.danger_label) + '</strong>' : ""}
+                            </div>
+                            <div class="trend-insufficient-banner">
+                                <span>⚠️</span>
+                                <span>Insufficient historical data for trend analysis. At least two chronological measurements are required to establish a trajectory.</span>
+                            </div>
+                        </div>
+                        <div class="trend-chart-footer">
+                            <div class="trend-chart-clinical-note">
+                                <span>ℹ️</span>
+                                <span>${escapeHtml(singleMeta && singleMeta.danger_reason ? singleMeta.danger_reason : "Awaiting follow-up laboratory measurements.")}</span>
+                            </div>
+                            ${recordLink}
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        trendChartsGrid.innerHTML = html;
+        setTimeout(function () {
+            renderTrendCharts(charts);
+        }, 50);
+    }
+
+    function renderAIObservationsHTML(ai_observations) {
+        if (!trendAIList) return;
+        if (!ai_observations || ai_observations.length === 0) {
+            trendAIList.innerHTML = `<div style="padding: 14px; color: #64748b; font-size: 13px;">No observations available for the active selection.</div>`;
+            return;
+        }
+
+        let html = "";
+        ai_observations.forEach(function (obs) {
+            const icon = obs.type === "alert" ? "⚠️" : (obs.type === "warning" ? "🔶" : (obs.type === "positive" ? "🟢" : "ℹ️"));
+            html += `
+                <div class="trend-ai-item ${escapeHtml(obs.type)}">
+                    <div class="trend-ai-icon">${icon}</div>
+                    <div class="trend-ai-content">
+                        <h4>${escapeHtml(obs.title)}</h4>
+                        <p>${escapeHtml(obs.text)}</p>
+                    </div>
+                </div>
+            `;
+        });
+        trendAIList.innerHTML = html;
+    }
+
+    function renderHistoricalTableHTML(rows) {
+        if (!trendTableBody) return;
+        if (!rows || rows.length === 0) {
+            trendTableBody.innerHTML = `
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 28px; color: #64748b;">
+                        No historical measurements match the active parameters and date filter.
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = "";
+        rows.forEach(function (row) {
+            const actionLink = row.record_id ?
+                '<a href="/doctor/patient-record/' + patientId + '/' + row.record_id + '" target="_blank" rel="noopener noreferrer" class="trend-table-action-btn">📄 View Original</a>' :
+                '<span style="color: #94a3b8; font-size: 11px;">Unavailable</span>';
+
+            html += `
+                <tr>
+                    <td class="trend-table-date">${escapeHtml(row.formatted_date)}</td>
+                    <td class="trend-table-param">${escapeHtml(row.param_name)}</td>
+                    <td class="trend-table-value">${row.value} <span style="font-size: 11px; color: #64748b; font-weight: 600;">${escapeHtml(row.unit)}</span></td>
+                    <td style="color: #475569; font-size: 12px;">${escapeHtml(row.reference_range)}</td>
+                    <td>
+                        <span class="trend-status-badge ${escapeHtml(row.danger_level)}">
+                            ${escapeHtml(row.danger_label)}
+                        </span>
+                    </td>
+                    <td class="trend-table-record" title="${escapeHtml(row.record_title)}">
+                        <strong>${escapeHtml(row.record_title)}</strong>
+                        <div style="font-size: 11px; color: #64748b;">${escapeHtml(row.record_type)}</div>
+                    </td>
+                    <td>${actionLink}</td>
+                </tr>
+            `;
+        });
+        trendTableBody.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return "";
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // 8. Apply Filters Logic
+    async function applyTrendFilters() {
+        const selectedParams = getSelectedParameterKeys();
+        const selectedPeriod = getSelectedPeriod();
+
+        if (selectedParams.length === 0) {
+            alert("Please select at least one health parameter to display.");
+            return;
+        }
+
+        if (trendApplyBtn) {
+            trendApplyBtn.disabled = true;
+            trendApplyBtn.innerHTML = `<span>⏳</span><span>Updating...</span>`;
+        }
+
+        try {
+            const response = await fetch(`/doctor/patient-workspace/${patientId}/trend-data`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    parameters: selectedParams,
+                    time_period: selectedPeriod
+                })
+            });
+
+            const result = await response.json();
+            if (result.success && result.trend_data) {
+                currentTrendData = result.trend_data;
+                renderSummariesHTML(currentTrendData.summaries);
+                renderChartsHTML(currentTrendData.charts);
+                renderAIObservationsHTML(currentTrendData.ai_observations);
+                renderHistoricalTableHTML(currentTrendData.historical_table);
+            } else {
+                alert(result.message || "Failed to update trend analysis data.");
+            }
+        } catch (error) {
+            console.error("Trend data filter error:", error);
+            alert("A network error occurred while updating health trends. Please try again.");
+        } finally {
+            if (trendApplyBtn) {
+                trendApplyBtn.disabled = false;
+                trendApplyBtn.innerHTML = `<span>⚡</span><span>Apply Filters</span>`;
+            }
+        }
+    }
+
+    if (trendApplyBtn) {
+        trendApplyBtn.addEventListener("click", applyTrendFilters);
+    }
+
+    // 9. Reset Filters Logic
+    function resetTrendFilters() {
+        // Reset period to 'all'
+        trendPeriodBtns.forEach(function (btn) {
+            if (btn.getAttribute("data-period") === "all") {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+
+        // Reset parameter checkboxes to defaults
+        const defaultKeys = (initialTrendData && initialTrendData.default_selected_keys) || [];
+        trendCheckboxes.forEach(function (cb) {
+            cb.checked = defaultKeys.includes(cb.value);
+        });
+
+        updateDropdownSelectionCount();
+        applyTrendFilters();
+    }
+
+    if (trendResetBtn) {
+        trendResetBtn.addEventListener("click", resetTrendFilters);
+    }
+
+});
+</script>
+
+{% endblock %}

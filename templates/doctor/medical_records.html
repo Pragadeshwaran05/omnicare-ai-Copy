@@ -1,0 +1,20 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}Patient Medical Records - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Patient Medical Records</h1>
+            <p>View and analyze authorized patient medical files and test results.</p>
+        </div>
+    </div>
+    <div class="empty-patients">
+        <div class="empty-icon">📋</div>
+        <h3>No Patient Records</h3>
+        <p>Authorized patient records will be displayed here.</p>
+    </div>
+</div>
+{% endblock %}

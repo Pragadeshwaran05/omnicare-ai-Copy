@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Doctor Portal | OmniCare AI{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_sidebar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/doctor_dashboard.css') }}">
+
+    {% block extra_css %}
+    {% endblock %}
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f8f8;
+        }
+
+        @media (min-width: 701px) {
+            .doctor-main {
+                margin-left: 271px;
+                min-height: 100vh;
+                background: #f4f8f8;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .doctor-main {
+                margin-left: 0;
+                padding-top: 60px;
+                min-height: 100vh;
+                background: #f4f8f8;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- MOBILE MENU BUTTON -->
+    <button class="doctor-mobile-menu-button" id="doctorMobileMenuBtn" type="button">
+        ☰
+    </button>
+
+    <!-- MOBILE OVERLAY -->
+    <div class="doctor-sidebar-overlay" id="doctorSidebarOverlay">
+    </div>
+
+    <!-- DOCTOR SIDEBAR -->
+    <aside class="doctor-sidebar" id="doctorSidebar">
+
+        <!-- LOGO -->
+        <div class="doctor-sidebar-brand">
+            <div class="doctor-brand-icon">+</div>
+            <div class="doctor-brand-text">OmniCare <span>AI</span></div>
+        </div>
+
+        <div class="doctor-sidebar-section">
+            Doctor Portal
+        </div>
+
+        <!-- MAIN NAVIGATION -->
+        <nav class="doctor-sidebar-nav">
+
+            <!-- Dashboard -->
+            <a href="{{ url_for('doctor_dashboard') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_dashboard' %}active{% endif %}">
+                <span class="doctor-nav-icon">🏠</span>
+                <span class="doctor-nav-text">Dashboard</span>
+            </a>
+
+            <!-- Patient Access -->
+            <a href="{{ url_for('doctor_patient_access') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_patient_access' %}active{% endif %}">
+                <span class="doctor-nav-icon">🔍</span>
+                <span class="doctor-nav-text">Patient Access</span>
+            </a>
+
+            <!-- Guest Patient Record -->
+            <a href="{{ url_for('doctor_guest_patient') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_guest_patient' %}active{% endif %}">
+                <span class="doctor-nav-icon">👤</span>
+                <span class="doctor-nav-text">Guest Patient Record</span>
+            </a>
+
+            <!-- Patient Medical Records -->
+            <a href="{{ url_for('doctor_medical_records') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_medical_records' %}active{% endif %}">
+                <span class="doctor-nav-icon">📋</span>
+                <span class="doctor-nav-text">Patient Medical Records</span>
+            </a>
+
+            <!-- AI Health Assistant -->
+            <a href="{{ url_for('doctor_ai_assistant') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_ai_assistant' %}active{% endif %}">
+                <span class="doctor-nav-icon">🤖</span>
+                <span class="doctor-nav-text">AI Health Assistant</span>
+            </a>
+
+            <!-- Consultation & Prescription -->
+            <a href="{{ url_for('doctor_consultations') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_consultations' %}active{% endif %}">
+                <span class="doctor-nav-icon">📝</span>
+                <span class="doctor-nav-text">Consultation & Prescription</span>
+            </a>
+
+            <!-- Access & Audit -->
+            <a href="{{ url_for('doctor_access_audit') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_access_audit' %}active{% endif %}">
+                <span class="doctor-nav-icon">🔐</span>
+                <span class="doctor-nav-text">Access &amp; Audit</span>
+            </a>
+
+        </nav>
+
+        <!-- BOTTOM SECTION -->
+        <div class="doctor-sidebar-bottom">
+
+            <!-- Profile -->
+            <a href="{{ url_for('doctor_profile') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_profile' %}active{% endif %}">
+                <span class="doctor-nav-icon">👤</span>
+                <span class="doctor-nav-text">Profile</span>
+            </a>
+
+            <!-- Settings -->
+            <a href="{{ url_for('doctor_settings') }}"
+               class="doctor-sidebar-link {% if request.endpoint == 'doctor_settings' %}active{% endif %}">
+                <span class="doctor-nav-icon">⚙️</span>
+                <span class="doctor-nav-text">Settings</span>
+            </a>
+
+            <!-- Logout -->
+            <a href="{{ url_for('logout') }}"
+               class="doctor-sidebar-link doctor-logout-link">
+                <span class="doctor-nav-icon">🚪</span>
+                <span class="doctor-nav-text">Logout</span>
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="doctor-main">
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const menuBtn = document.getElementById("doctorMobileMenuBtn");
+            const sidebar = document.getElementById("doctorSidebar");
+            const overlay = document.getElementById("doctorSidebarOverlay");
+
+            if (menuBtn && sidebar && overlay) {
+                menuBtn.addEventListener("click", function() {
+                    sidebar.classList.toggle("open");
+                    overlay.classList.toggle("active");
+                });
+                overlay.addEventListener("click", function() {
+                    sidebar.classList.remove("open");
+                    overlay.classList.remove("active");
+                });
+            }
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,1107 @@
+/* =========================================
+   OMNICARE AI
+   PATIENT HEALTH RECORDS
+   ========================================= */
+
+
+/* =========================================
+   MAIN PAGE
+   ========================================= */
+
+.health-records-page {
+
+    width: 100%;
+
+    max-width: 1400px;
+
+    margin: 0 auto;
+
+    padding: 10px 5px 40px;
+
+    box-sizing: border-box;
+}
+
+
+/* =========================================
+   HEADER
+   ========================================= */
+
+.records-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-end;
+
+    gap: 25px;
+
+    margin-bottom: 30px;
+}
+
+
+.records-heading {
+
+    min-width: 0;
+}
+
+
+.page-label {
+
+    display: inline-block;
+
+    color: #08777A;
+
+    font-size: 13px;
+
+    font-weight: 800;
+
+    letter-spacing: 1.2px;
+
+    margin-bottom: 10px;
+}
+
+
+.records-heading h1 {
+
+    margin: 0 0 8px;
+
+    color: #102A43;
+
+    font-size: 32px;
+
+    line-height: 1.2;
+
+    font-weight: 800;
+
+    letter-spacing: -0.8px;
+}
+
+
+.records-heading p {
+
+    margin: 0;
+
+    color: #668096;
+
+    font-size: 15px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   UPLOAD BUTTON
+   ========================================= */
+
+.upload-record-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    padding: 12px 18px;
+
+    background: #0F9FA3;
+
+    color: #FFFFFF;
+
+    border-radius: 10px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.upload-record-btn:hover {
+
+    background: #08777A;
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 8px 20px rgba(15, 159, 163, 0.20);
+}
+
+
+/* =========================================
+   STATISTICS GRID
+   ========================================= */
+
+.records-stats {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 18px;
+
+    margin-bottom: 25px;
+}
+
+
+/* =========================================
+   STAT CARD
+   ========================================= */
+
+.record-stat-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    min-width: 0;
+
+    padding: 20px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(16, 42, 67, 0.04);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.record-stat-card:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 12px 30px
+        rgba(16, 42, 67, 0.08);
+}
+
+
+/* =========================================
+   STAT ICON
+   ========================================= */
+
+.record-stat-icon {
+
+    width: 48px;
+
+    height: 48px;
+
+    min-width: 48px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    border-radius: 12px;
+
+    font-size: 22px;
+}
+
+
+.records-icon {
+
+    background: #E7F8F8;
+}
+
+
+.diagnosis-icon {
+
+    background: #EEF6FF;
+}
+
+
+.medicine-icon {
+
+    background: #FFF5E8;
+}
+
+
+.report-icon {
+
+    background: #F1EEFF;
+}
+
+
+/* =========================================
+   STAT CONTENT
+   ========================================= */
+
+.record-stat-content {
+
+    min-width: 0;
+}
+
+
+.record-stat-content span {
+
+    display: block;
+
+    color: #7890A0;
+
+    font-size: 13px;
+
+    line-height: 1.4;
+
+    margin-bottom: 4px;
+}
+
+
+.record-stat-content strong {
+
+    display: block;
+
+    color: #102A43;
+
+    font-size: 25px;
+
+    line-height: 1.2;
+
+    font-weight: 800;
+}
+
+
+/* =========================================
+   MAIN RECORD CARD
+   ========================================= */
+
+.records-card {
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 25px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 16px;
+
+    box-shadow:
+        0 8px 25px
+        rgba(16, 42, 67, 0.04);
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================================
+   CARD HEADER
+   ========================================= */
+
+.records-card-header {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    margin-bottom: 20px;
+}
+
+
+.records-card-header h2 {
+
+    margin: 0 0 6px;
+
+    color: #102A43;
+
+    font-size: 20px;
+
+    line-height: 1.3;
+
+    font-weight: 800;
+}
+
+
+.records-card-header p {
+
+    margin: 0;
+
+    color: #7890A0;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================
+   SEARCH + FILTER
+   ========================================= */
+
+.records-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    width: 100%;
+
+    margin-bottom: 20px;
+}
+
+
+.record-search {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 9px;
+
+    width: 100%;
+
+    max-width: 430px;
+
+    box-sizing: border-box;
+
+    padding: 10px 13px;
+
+    background: #F7FBFB;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 9px;
+}
+
+
+.search-icon {
+
+    flex-shrink: 0;
+
+    font-size: 16px;
+}
+
+
+.record-search input {
+
+    width: 100%;
+
+    min-width: 0;
+
+    padding: 0;
+
+    border: none;
+
+    outline: none;
+
+    background: transparent;
+
+    color: #183B56;
+
+    font-family: inherit;
+
+    font-size: 13px;
+}
+
+
+.record-search input::placeholder {
+
+    color: #9AAAB5;
+}
+
+
+.record-filter {
+
+    min-width: 170px;
+
+    padding: 10px 13px;
+
+    background: #FFFFFF;
+
+    border: 1px solid #DCEDEE;
+
+    border-radius: 9px;
+
+    color: #527080;
+
+    font-family: inherit;
+
+    font-size: 13px;
+
+    outline: none;
+
+    cursor: pointer;
+}
+
+
+.record-filter:focus {
+
+    border-color: #0F9FA3;
+}
+
+
+/* =========================================
+   RECORD LIST
+   ========================================= */
+
+.records-list {
+
+    width: 100%;
+
+    display: flex;
+
+    flex-direction: column;
+}
+
+
+/* =========================================
+   RECORD ITEM
+   ========================================= */
+
+.health-record-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 16px 5px;
+
+    border-bottom: 1px solid #EDF4F4;
+}
+
+
+.health-record-item:last-child {
+
+    border-bottom: none;
+}
+
+
+/* =========================================
+   RECORD ICON
+   ========================================= */
+
+.health-record-icon {
+
+    width: 45px;
+
+    height: 45px;
+
+    min-width: 45px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #E7F8F8;
+
+    border-radius: 11px;
+
+    font-size: 20px;
+}
+
+
+/* =========================================
+   RECORD INFORMATION
+   ========================================= */
+
+.health-record-info {
+
+    flex: 1;
+
+    min-width: 0;
+}
+
+
+.health-record-info h3 {
+
+    margin: 0 0 5px;
+
+    color: #183B56;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+    font-weight: 700;
+
+    word-break: break-word;
+}
+
+
+.record-type {
+
+    color: #527080;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    margin-bottom: 3px;
+}
+
+
+.record-date {
+
+    color: #8A9EAC;
+
+    font-size: 11px;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================
+   VIEW BUTTON
+   ========================================= */
+
+.health-record-action {
+
+    flex-shrink: 0;
+}
+
+
+.view-record-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 8px 14px;
+
+    background: #E7F8F8;
+
+    color: #08777A;
+
+    border-radius: 8px;
+
+    text-decoration: none;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.view-record-btn:hover {
+
+    background: #D5F1F1;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   EMPTY STATE
+   ========================================= */
+
+.empty-records {
+
+    text-align: center;
+
+    padding: 50px 20px;
+}
+
+
+.empty-record-icon {
+
+    width: 62px;
+
+    height: 62px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    margin: 0 auto 16px;
+
+    background: #E7F8F8;
+
+    border-radius: 16px;
+
+    font-size: 28px;
+}
+
+
+.empty-records h3 {
+
+    margin: 0 0 9px;
+
+    color: #183B56;
+
+    font-size: 19px;
+
+    font-weight: 800;
+}
+
+
+.empty-records p {
+
+    max-width: 560px;
+
+    margin: 0 auto 22px;
+
+    color: #7890A0;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+}
+
+
+.empty-upload-btn {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    padding: 11px 17px;
+
+    background: #0F9FA3;
+
+    color: #FFFFFF;
+
+    border-radius: 9px;
+
+    text-decoration: none;
+
+    font-size: 13px;
+
+    font-weight: 700;
+
+    transition: 0.2s ease;
+}
+
+
+.empty-upload-btn:hover {
+
+    background: #08777A;
+
+    transform: translateY(-1px);
+}
+
+
+/* =========================================
+   NO SEARCH RESULTS
+   ========================================= */
+
+.no-search-results {
+
+    text-align: center;
+
+    padding: 40px 20px;
+}
+
+
+.no-search-results > div {
+
+    font-size: 28px;
+
+    margin-bottom: 10px;
+}
+
+
+.no-search-results h3 {
+
+    color: #183B56;
+
+    font-size: 17px;
+
+    margin: 0 0 6px;
+}
+
+
+.no-search-results p {
+
+    color: #7890A0;
+
+    font-size: 13px;
+
+    margin: 0;
+}
+
+
+/* =========================================
+   SECURITY CARD
+   ========================================= */
+
+.security-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    padding: 20px;
+
+    background: #F1FBFB;
+
+    border: 1px solid #CDE9EA;
+
+    border-radius: 15px;
+}
+
+
+.security-icon {
+
+    width: 46px;
+
+    height: 46px;
+
+    min-width: 46px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    background: #FFFFFF;
+
+    border-radius: 11px;
+
+    font-size: 21px;
+}
+
+
+.security-content {
+
+    min-width: 0;
+}
+
+
+.security-content h3 {
+
+    margin: 0 0 5px;
+
+    color: #183B56;
+
+    font-size: 15px;
+
+    font-weight: 800;
+}
+
+
+.security-content p {
+
+    margin: 0;
+
+    color: #668096;
+
+    font-size: 12px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media (max-width: 1100px) {
+
+    .records-stats {
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 700px) {
+
+    .health-records-page {
+
+        padding: 5px 0 30px;
+    }
+
+
+    .records-header {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        margin-bottom: 22px;
+    }
+
+
+    .records-heading h1 {
+
+        font-size: 27px;
+    }
+
+
+    .records-heading p {
+
+        font-size: 14px;
+    }
+
+
+    .upload-record-btn {
+
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+
+
+    .records-stats {
+
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+
+    .record-stat-card {
+
+        padding: 17px;
+    }
+
+
+    .records-card {
+
+        padding: 18px;
+
+        border-radius: 14px;
+    }
+
+
+    .records-controls {
+
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .record-search {
+
+        max-width: none;
+    }
+
+
+    .record-filter {
+
+        width: 100%;
+    }
+
+
+    .health-record-item {
+
+        align-items: flex-start;
+
+        padding: 15px 2px;
+    }
+
+
+    .health-record-icon {
+
+        width: 40px;
+
+        height: 40px;
+
+        min-width: 40px;
+
+        font-size: 18px;
+    }
+
+
+    .health-record-info h3 {
+
+        font-size: 13px;
+    }
+
+
+    .health-record-action {
+
+        display: none;
+    }
+
+
+    .security-card {
+
+        align-items: flex-start;
+
+        padding: 17px;
+    }
+
+}
+
+
+/* =========================================
+   SMALL MOBILE
+   ========================================= */
+
+@media (max-width: 400px) {
+
+    .records-heading h1 {
+
+        font-size: 24px;
+    }
+
+
+    .records-card-header h2 {
+
+        font-size: 18px;
+    }
+
+
+    .record-stat-content strong {
+
+        font-size: 22px;
+    }
+
+
+    .security-card {
+
+        gap: 11px;
+    }
+
+}
+
+/* =========================================================
+   HEALTH RECORDS - DARKER / CLEARER RECORD DISPLAY
+   Add this at the END of patient_health_records.css
+   ========================================================= */
+
+/* Record title */
+.record-title,
+.health-record-title,
+.record-item h3,
+.record-card h3 {
+    color: #0b2f4f !important;
+    font-weight: 700 !important;
+}
+
+/* Record type / description area */
+.record-type,
+.record-category,
+.record-item .record-type,
+.record-card .record-type {
+    color: #164b6d !important;
+    background: #eaf4f7 !important;
+    border: 1px solid #c5dfe7 !important;
+    font-weight: 500 !important;
+}
+
+/* Uploaded date */
+.record-date,
+.uploaded-date,
+.record-item small,
+.record-card small {
+    color: #42627a !important;
+    font-weight: 500 !important;
+}
+
+/* Main record text */
+.record-item,
+.record-card {
+    color: #16384f !important;
+}
+
+/* View Record button */
+.view-record,
+.view-record-btn,
+.record-item .view-record,
+.record-card .view-record {
+    background: #dff3f5 !important;
+    color: #006d73 !important;
+    border: 1px solid #b8dfe3 !important;
+    font-weight: 700 !important;
+}
+
+.view-record:hover,
+.view-record-btn:hover {
+    background: #0e9fa6 !important;
+    color: #ffffff !important;
+}
+
+/* Record icon */
+.record-icon,
+.record-item .record-icon,
+.record-card .record-icon {
+    background: #e2f5f6 !important;
+    color: #31566e !important;
+}
+
+/* Search box text */
+.search-input,
+.search-box input {
+    color: #183b52 !important;
+}
+
+.search-input::placeholder,
+.search-box input::placeholder {
+    color: #688399 !important;
+}
+
+/* Filter dropdown */
+.record-filter,
+.filter-select,
+select {
+    color: #24485f !important;
+}
+
+/* Make all record text readable */
+.health-records-container,
+.health-records-container p,
+.health-records-container span,
+.health-records-container div {
+    color: #24485f;
+}
+
+/* Keep headings dark */
+.health-records-container h1,
+.health-records-container h2,
+.health-records-container h3,
+.health-records-container h4 {
+    color: #092f4d !important;
+}

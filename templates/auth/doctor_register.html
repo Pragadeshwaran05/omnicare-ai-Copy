@@ -1,0 +1,395 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Doctor Registration | OmniCare AI</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static',
+                  filename='css/doctor_register.css') }}">
+</head>
+
+<body>
+
+<div class="register-page">
+
+    <!-- LEFT SIDE -->
+    <div class="register-info">
+
+        <div class="brand">
+            <div class="brand-icon">+</div>
+
+            <div class="brand-name">
+                OmniCare <span>AI</span>
+            </div>
+        </div>
+
+        <div class="info-content">
+
+            <div class="doctor-icon">
+                👨‍⚕️
+            </div>
+
+            <h1>
+                Doctor Registration
+            </h1>
+
+            <p>
+                Create your professional account to securely
+                access authorized patient medical records
+                and use OmniCare AI.
+            </p>
+
+            <div class="feature-list">
+
+                <div class="feature-item">
+                    <span>🔐</span>
+                    <div>
+                        <strong>Secure Access</strong>
+                        <small>
+                            Access patient records only with proper authorization.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>🤖</span>
+                    <div>
+                        <strong>AI Health Assistant</strong>
+                        <small>
+                            Understand patient history with AI-powered assistance.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <span>📋</span>
+                    <div>
+                        <strong>Unified Records</strong>
+                        <small>
+                            View organized medical information in one place.
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- RIGHT SIDE -->
+    <div class="register-container">
+
+        <div class="register-card">
+
+            <div class="form-header">
+
+                <span class="form-badge">
+                    DOCTOR PORTAL
+                </span>
+
+                <h2>
+                    Create your account
+                </h2>
+
+                <p>
+                    Enter your professional details to get started.
+                </p>
+
+            </div>
+
+
+            <!-- FLASH MESSAGES -->
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+
+                {% if messages %}
+
+                    <div class="flash-container">
+
+                        {% for category, message in messages %}
+
+                            <div class="flash-message {{ category }}">
+                                {{ message }}
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                {% endif %}
+
+            {% endwith %}
+
+
+            <form method="POST"
+                  action="{{ url_for('doctor_register') }}">
+
+
+                <!-- FULL NAME -->
+
+                <div class="form-group">
+
+                    <label for="full_name">
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="full_name"
+                        name="full_name"
+                        placeholder="Enter your full name"
+                        required>
+
+                </div>
+
+
+                <!-- MEDICAL REGISTRATION NUMBER -->
+
+                <div class="form-group">
+
+                    <label for="medical_registration_number">
+                        Medical Registration Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="medical_registration_number"
+                        name="medical_registration_number"
+                        placeholder="Enter registration number"
+                        required>
+
+                </div>
+
+
+                <!-- SPECIALIZATION -->
+
+                <div class="form-group">
+
+                    <label for="specialization">
+                        Specialization
+                    </label>
+
+                    <select
+                        id="specialization"
+                        name="specialization"
+                        required>
+
+                        <option value="">
+                            Select specialization
+                        </option>
+
+                        <option value="General Medicine">
+                            General Medicine
+                        </option>
+
+                        <option value="Cardiology">
+                            Cardiology
+                        </option>
+
+                        <option value="Neurology">
+                            Neurology
+                        </option>
+
+                        <option value="Orthopedics">
+                            Orthopedics
+                        </option>
+
+                        <option value="Pediatrics">
+                            Pediatrics
+                        </option>
+
+                        <option value="Dermatology">
+                            Dermatology
+                        </option>
+
+                        <option value="Gynecology">
+                            Gynecology
+                        </option>
+
+                        <option value="Psychiatry">
+                            Psychiatry
+                        </option>
+
+                        <option value="Oncology">
+                            Oncology
+                        </option>
+
+                        <option value="Other">
+                            Other
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- HOSPITAL -->
+
+                <div class="form-group">
+
+                    <label for="hospital_name">
+                        Hospital / Clinic Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="hospital_name"
+                        name="hospital_name"
+                        placeholder="Enter hospital or clinic name"
+                        required>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="form-group">
+
+                    <label for="hospital_address">
+                        Hospital / Clinic Address
+                    </label>
+
+                    <textarea
+                        id="hospital_address"
+                        name="hospital_address"
+                        rows="3"
+                        placeholder="Enter complete hospital / clinic address"
+                        required></textarea>
+
+                </div>
+
+
+                <!-- EMAIL + PHONE -->
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email Address
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="doctor@example.com"
+                            required>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            placeholder="Enter phone number"
+                            required>
+
+                    </div>
+
+                </div>
+
+
+                <!-- PASSWORD -->
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Create a password"
+                        required>
+
+                </div>
+
+
+                <!-- CONFIRM PASSWORD -->
+
+                <div class="form-group">
+
+                    <label for="confirm_password">
+                        Confirm Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        placeholder="Confirm your password"
+                        required>
+
+                </div>
+
+
+                <!-- TERMS -->
+
+                <div class="terms">
+
+                    <input
+                        type="checkbox"
+                        id="terms"
+                        name="terms"
+                        required>
+
+                    <label for="terms">
+                        I confirm that the information provided is
+                        accurate and I am a registered medical professional.
+                    </label>
+
+                </div>
+
+
+                <!-- SUBMIT -->
+
+                <button
+                    type="submit"
+                    class="register-button">
+
+                    Create Doctor Account
+                    <span>→</span>
+
+                </button>
+
+            </form>
+
+
+            <div class="login-link">
+
+                Already have an account?
+
+                <a href="{{ url_for('doctor_login') }}">
+                    Login here
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

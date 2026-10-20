@@ -1,0 +1,340 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Doctor Login | OmniCare AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #e8f8f8, #f4f8ff);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 430px;
+        }
+
+        .login-card {
+            background: white;
+            border-radius: 22px;
+            padding: 38px;
+            box-shadow: 0 15px 45px rgba(0, 80, 80, 0.15);
+            border: 1px solid #dceeee;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .logo-icon {
+            width: 58px;
+            height: 58px;
+            margin: 0 auto 12px;
+            border-radius: 16px;
+            background: #0f9d9a;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .logo h1 {
+            color: #123d5a;
+            font-size: 28px;
+        }
+
+        .logo h1 span {
+            color: #27c6c3;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b8293;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .doctor-badge {
+            text-align: center;
+            color: #087f7c;
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 7px;
+            color: #163d56;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbdfe2;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #0faaa7;
+            box-shadow: 0 0 0 3px rgba(15, 170, 167, 0.12);
+        }
+
+        .password-row {
+            position: relative;
+        }
+
+        .password-row input {
+            padding-right: 48px;
+        }
+
+        .show-password {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 17px;
+        }
+
+        .forgot {
+            text-align: right;
+            margin-top: -8px;
+            margin-bottom: 20px;
+        }
+
+        .forgot a {
+            color: #0a8f8c;
+            font-size: 13px;
+            text-decoration: none;
+        }
+
+        .login-btn {
+            width: 100%;
+            border: none;
+            border-radius: 11px;
+            padding: 14px;
+            background: #0faaa7;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #078b89;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 22px;
+            color: #718594;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #087f7c;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .alert {
+            padding: 11px 13px;
+            border-radius: 9px;
+            margin-bottom: 18px;
+            background: #fff1f1;
+            color: #b42318;
+            border: 1px solid #ffd0d0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .login-card {
+                padding: 28px 22px;
+                border-radius: 18px;
+            }
+
+            .logo h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <div class="login-card">
+
+        <div class="logo">
+
+            <div class="logo-icon">
+                +
+            </div>
+
+            <h1>
+                OmniCare <span>AI</span>
+            </h1>
+
+            <p class="subtitle">
+                Unified Health-Record Intelligence
+            </p>
+
+        </div>
+
+        <div class="doctor-badge">
+            👨‍⚕️ Doctor Login
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST"
+              action="{{ url_for('doctor_login') }}">
+
+            <div class="form-group">
+
+                <label for="email">
+                    Email Address
+                </label>
+
+                <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    placeholder="Enter your email"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label for="password">
+                    Password
+                </label>
+
+                <div class="password-row">
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="show-password"
+                        onclick="togglePassword()">
+                        👁️
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <div class="forgot">
+                <a href="#">
+                    Forgot Password?
+                </a>
+            </div>
+
+
+            <button
+                type="submit"
+                class="login-btn">
+
+                Login as Doctor
+
+            </button>
+
+        </form>
+
+
+        <div class="register-link">
+
+            Don't have a doctor account?
+
+            <a href="{{ url_for('doctor_register') }}">
+                Register
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+function togglePassword() {
+
+    const password =
+        document.getElementById("password");
+
+    if (password.type === "password") {
+
+        password.type = "text";
+
+    } else {
+
+        password.type = "password";
+
+    }
+}
+
+</script>
+
+</body>
+</html>

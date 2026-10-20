@@ -1,0 +1,612 @@
+{% extends "doctor_base.html" %}
+
+{% block content %}
+
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/doctor_my_patients.css') }}">
+
+<div class="my-patients-page">
+
+    <!-- PAGE HEADER -->
+    <div class="my-patients-header">
+
+        <div>
+            <h1>My Patients</h1>
+
+            <p>
+                Patients who have authorized you to access their medical records.
+            </p>
+        </div>
+
+    </div>
+
+
+    <!-- SEARCH + FILTER -->
+    <div class="patients-toolbar">
+
+        <div class="patient-search-box">
+
+            <span>🔎</span>
+
+            <input
+                type="text"
+                id="patientSearch"
+                placeholder="Search patient or Health ID..."
+                autocomplete="off"
+            >
+
+        </div>
+
+
+        <select id="accessFilter" class="access-filter">
+
+            <option value="all">
+                All Access
+            </option>
+
+            <option value="active">
+                Active
+            </option>
+            <option value="one_time">
+        One-Time Access
+    </option>
+            <option value="permanent">
+                Permanent Access
+            </option>
+
+            <option value="temporary">
+                Temporary Access
+            </option>
+
+            <option value="expiring">
+                Expiring Soon
+            </option>
+
+            <option value="expired">
+                Expired
+            </option>
+
+            <option value="revoked">
+                Revoked
+            </option>
+
+        </select>
+
+    </div>
+
+
+    {% if error %}
+
+        <div class="patients-error">
+            {{ error }}
+        </div>
+
+    {% endif %}
+
+
+    <!-- ACTIVE PATIENTS -->
+    <section class="patients-section">
+
+        <div class="section-heading">
+
+            <div>
+                <h2>🟢 Active Access</h2>
+
+                <p>
+                    Patients you can currently access.
+                </p>
+            </div>
+
+            <span class="patient-count">
+                {{ patients|length }}
+            </span>
+
+        </div>
+
+
+        {% if patients %}
+
+            <div class="patients-grid" id="patientsGrid">
+
+                {% for patient in patients %}
+
+                    <div
+                        class="patient-card"
+                        data-name="{{ patient.patient_name|lower }}"
+                        data-health-id="{{ patient.health_id|lower }}"
+                        data-access="{{ patient.access_type|lower }}"
+                        data-status="{{ patient.status|lower }}"
+                        data-expiring="{% if patient in expiring_soon %}true{% else %}false{% endif %}"
+                    >
+
+                        <!-- CARD TOP -->
+                        <div class="patient-card-top">
+
+                            <div class="patient-avatar">
+                                👤
+                            </div>
+
+
+                            <div class="patient-main-info">
+
+                                <h3>
+                                    {{ patient.get('full_name') or patient.get('name') or 'Patient' }}
+                                </h3>
+
+                                <p>
+                                    Health ID:
+                                    <strong>
+                                        {{ patient.health_id }}
+                                    </strong>
+                                </p>
+
+                            </div>
+
+
+                         {% if patient.access_type == "one_time" %}
+
+    <span class="access-badge one-time">
+        🔵 One-Time Access
+    </span>
+
+{% elif patient.access_type == "temporary" %}
+
+    <span class="access-badge temporary">
+        🟡 Temporary Access
+    </span>
+
+{% elif patient.access_type == "permanent" %}
+
+    <span class="access-badge permanent">
+        🟢 Permanent Access
+    </span>
+
+{% else %}
+
+    <span class="access-badge temporary">
+        🔐 Access
+    </span>
+
+{% endif %}
+                        </div>
+
+
+                        <!-- PATIENT DETAILS -->
+                        <div class="patient-details">
+
+                            <div class="patient-detail">
+
+                                <span class="detail-label">
+                                    Gender
+                                </span>
+
+                                <span class="detail-value">
+                                    {{ patient.gender or "Not specified" }}
+                                </span>
+
+                            </div>
+
+
+                            <div class="patient-detail">
+
+                                <span class="detail-label">
+                                    Age
+                                </span>
+
+                                <span class="detail-value">
+
+                                    {% if patient.age %}
+                                        {{ patient.age }}
+                                    {% else %}
+                                        Not specified
+                                    {% endif %}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ACCESS INFORMATION -->
+   <div class="access-information">
+
+    {% if patient.access_type == "one_time" %}
+
+        <div class="access-line">
+            <span>🔵</span>
+            <span>
+                One-Time Access
+            </span>
+        </div>
+
+        <div class="approved-line">
+            Access will end after the authorized consultation/action is completed.
+        </div>
+
+
+    {% elif patient.access_type == "temporary" %}
+
+        <div class="access-line">
+            <span>⏱️</span>
+            <span>
+
+                {% if patient.remaining_display %}
+                    {{ patient.remaining_display }}
+
+                {% elif patient.expires_at_display %}
+                    Expires:
+                    {{ patient.expires_at_display }}
+
+                {% else %}
+                    Temporary access
+                {% endif %}
+
+            </span>
+        </div>
+
+        {% if patient.approved_at_display %}
+            <div class="approved-line">
+                Access granted:
+                {{ patient.approved_at_display }}
+            </div>
+        {% endif %}
+
+
+    {% elif patient.access_type == "permanent" %}
+
+        <div class="access-line">
+            <span>🔐</span>
+            <span>
+                Permanent access granted
+            </span>
+        </div>
+
+        <div class="approved-line">
+            Access remains active until you revoke it.
+        </div>
+
+
+    {% else %}
+
+        <div class="access-line">
+            <span>🔐</span>
+            <span>
+                Authorized access
+            </span>
+        </div>
+
+    {% endif %}
+
+</div>
+
+
+                        <!-- ACTION -->
+     <!-- ACTION -->
+<!-- ACTION -->
+<div class="patient-card-action">
+
+    <a
+        href="{{ url_for(
+            'doctor_patient_workspace',
+            patient_id=patient.patient_id
+        ) }}"
+        class="open-patient-btn"
+        onclick="console.log('Opening patient workspace:', this.href);"
+    >
+        Open Patient Workspace
+        <span>→</span>
+    </a>
+
+</div>  
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+
+            <!-- NO SEARCH RESULTS -->
+            <div
+                id="noSearchResults"
+                class="no-search-results"
+                style="display:none;"
+            >
+
+                <div class="no-search-icon">
+                    🔎
+                </div>
+
+                <h3>No patients found</h3>
+
+                <p>
+                    Try a different patient name or Health ID.
+                </p>
+
+            </div>
+
+        {% else %}
+
+            <!-- EMPTY STATE -->
+            <div class="empty-patients">
+
+                <div class="empty-patients-icon">
+                    👥
+                </div>
+
+                <h2>No Authorized Patients</h2>
+
+                <p>
+                    Patients who approve your access requests
+                    will appear here.
+                </p>
+
+                <a
+                    href="{{ url_for('doctor_patient_access') }}"
+                    class="find-patient-btn"
+                >
+                    🔍 Find Patient
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <!-- EXPIRING SOON -->
+    {% if expiring_soon %}
+
+        <section
+            class="patients-section expiring-section"
+            id="expiringSection"
+        >
+
+            <div class="section-heading">
+
+                <div>
+
+                    <h2>
+                        ⏳ Expiring Soon
+                    </h2>
+
+                    <p>
+                        Temporary access that will expire soon.
+                    </p>
+
+                </div>
+
+                <span class="patient-count warning">
+                    {{ expiring_soon|length }}
+                </span>
+
+            </div>
+
+
+            <div class="expiring-list">
+
+                {% for patient in expiring_soon %}
+
+                    <div
+                        class="expiring-card"
+                        data-name="{{ patient.patient_name|lower }}"
+                    >
+
+                        <div class="expiring-patient">
+
+                            <div class="small-avatar">
+                                👤
+                            </div>
+
+                            <div>
+
+                                <h3>
+                                    {{ patient.patient_name }}
+                                </h3>
+
+                                <p>
+                                    {{ patient.health_id }}
+                                </p>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="expiry-info">
+
+                            <span class="expiry-time">
+                                ⏱ {{ patient.remaining_display }}
+                            </span>
+
+                            <span>
+                                Temporary Access
+                            </span>
+
+                        </div>
+
+
+                        <a
+                            href="{{ url_for(
+                                'doctor_patient_workspace',
+                                patient_id=patient.patient_id
+                            ) }}"
+                            class="small-open-btn"
+                        >
+                            Open
+                        </a>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const searchInput =
+        document.getElementById("patientSearch");
+
+    const filter =
+        document.getElementById("accessFilter");
+
+    const cards =
+        document.querySelectorAll(".patient-card");
+
+    const noResults =
+        document.getElementById("noSearchResults");
+
+
+    function filterPatients() {
+
+        const search =
+            searchInput.value.toLowerCase().trim();
+
+        const selectedFilter =
+            filter.value;
+
+        let visibleCount = 0;
+
+
+        cards.forEach(function (card) {
+
+            const name =
+                card.dataset.name || "";
+
+            const healthId =
+                card.dataset.healthId || "";
+
+            const access =
+                card.dataset.access || "";
+
+            const status =
+                card.dataset.status || "";
+
+            const expiring =
+                card.dataset.expiring === "true";
+
+
+            const matchesSearch =
+                name.includes(search) ||
+                healthId.includes(search);
+
+
+            let matchesFilter = true;
+
+
+            if (selectedFilter === "active") {
+
+                matchesFilter =
+                    status === "active"||
+                    access === "one_time" ||
+        access === "temporary" ||
+        access === "permanent";
+
+            }
+            else if (selectedFilter === "one_time") {
+
+                matchesFilter =
+                      access === "one_time";
+
+            }
+
+            else if (selectedFilter === "permanent") {
+
+                matchesFilter =
+                    access === "permanent";
+
+            }
+
+            else if (selectedFilter === "temporary") {
+
+                matchesFilter =
+                    access === "temporary";
+
+            }
+
+            else if (selectedFilter === "expiring") {
+
+                matchesFilter =
+                    expiring;
+
+            }
+
+            else if (selectedFilter === "expired") {
+
+                matchesFilter =
+                    status === "expired";
+
+            }
+
+            else if (selectedFilter === "revoked") {
+
+                matchesFilter =
+                    status === "revoked";
+
+            }
+
+
+            if (matchesSearch && matchesFilter) {
+
+                card.style.display = "";
+
+                visibleCount++;
+
+            }
+
+            else {
+
+                card.style.display = "none";
+
+            }
+
+        });
+
+
+        if (noResults) {
+
+            noResults.style.display =
+                visibleCount === 0
+                    ? "block"
+                    : "none";
+
+        }
+
+    }
+
+
+    if (searchInput) {
+
+        searchInput.addEventListener(
+            "input",
+            filterPatients
+        );
+
+    }
+
+
+    if (filter) {
+
+        filter.addEventListener(
+            "change",
+            filterPatients
+        );
+
+    }
+
+});
+
+</script>
+
+{% endblock %}

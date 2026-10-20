@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+
+{% extends "doctor_base.html" %}
+
+{% block title %}Doctor Profile - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL</span>
+            <h1>Doctor Profile</h1>
+            <p>Your professional credentials and account details.</p>
+        </div>
+    </div>
+    <div class="empty-patients">
+        <div class="empty-icon">👨‍⚕️</div>
+        <h3>Dr. {{ doctor.full_name if doctor else session.get('doctor_name', 'Doctor') }}</h3>
+        <p>Specialization: {{ doctor.specialization if doctor else 'Medical Specialist' }}</p>
+        <p>Medical Reg No: {{ doctor.medical_registration_number if doctor else 'Registered' }}</p>
+    </div>
+</div>
+{% endblock %}

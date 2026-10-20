@@ -1,0 +1,239 @@
+
+{% extends "patient_base.html" %}
+
+{% block title %}Profile & Emergency Info | OmniCare AI{% endblock %}
+
+{% block content %}
+<link rel="stylesheet"
+      href="{{ url_for('static', filename='css/patient_profile.css') }}">
+
+<div class="profile-page">
+    <header class="profile-heading">
+        <div>
+            <span class="eyebrow">MY ACCOUNT</span>
+            <h1>Profile & Emergency Info</h1>
+            <p>Keep your personal and medical information accurate and up to date.</p>
+        </div>
+        <div class="profile-avatar" aria-hidden="true">👤</div>
+    </header>
+
+    <form id="patientProfileForm"
+          method="POST"
+          action="{{ url_for('patient_profile') }}">
+
+        <input type="hidden" name="csrf_token"
+               value="{{ csrf_token() if csrf_token is defined else '' }}">
+
+        <!-- PERSONAL INFORMATION -->
+        <section class="profile-card">
+            <div class="section-heading">
+                <div class="section-icon personal-icon">👤</div>
+                <div>
+                    <h2>Personal Information</h2>
+                    <p>Your basic identity and contact details.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="name">Full Name <span>*</span></label>
+                    <input id="name" name="name" type="text"
+                          value="{{ patient.get('full_name', '') }}"
+                           autocomplete="name" required>
+                </div>
+
+                <div class="field">
+                    <label for="date_of_birth">Date of Birth</label>
+                    <input id="date_of_birth" name="date_of_birth"
+                           type="date"
+                           value="{{ patient.get('date_of_birth', '') }}"
+                           max="{{ today }}">
+                </div>
+
+                <div class="field">
+                    <label for="age">Age</label>
+                    <input id="age" type="text"
+                           value="{{ patient.get('age', '') }}"
+                           placeholder="Calculated from date of birth"
+                           readonly>
+                    <small>Automatically calculated when date of birth is available.</small>
+                </div>
+
+                <div class="field">
+                    <label for="gender">Gender</label>
+                    <select id="gender" name="gender">
+                        <option value="">Select gender</option>
+                        {% for option in ['Male', 'Female', 'Other', 'Prefer not to say'] %}
+                        <option value="{{ option }}"
+                            {% if patient.get('gender', '') == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="blood_group">Blood Group</label>
+                    <select id="blood_group" name="blood_group">
+                        <option value="">Select blood group</option>
+                        {% for option in ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'] %}
+                        <option value="{{ option }}"
+                            {% if patient.get('blood_group', '') == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="phone">Phone Number</label>
+                    <input id="phone" name="phone" type="tel"
+                           value="{{ patient.get('phone', '') }}"
+                           autocomplete="tel">
+                </div>
+
+                <div class="field">
+                    <label for="email">Email Address</label>
+                    <input id="email" name="email" type="email"
+                           value="{{ patient.get('email', '') }}"
+                           autocomplete="email">
+                </div>
+
+                <div class="field field-full">
+                    <label for="address">Residential Address</label>
+                    <textarea id="address" name="address" rows="2"
+                              autocomplete="street-address">{{ patient.get('address', '') }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEDICAL INFORMATION -->
+        <section class="profile-card">
+            <div class="section-heading">
+                <div class="section-icon medical-icon">♥</div>
+                <div>
+                    <h2>Medical Information</h2>
+                    <p>Important health details for authorized healthcare professionals.</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="height_cm">Height (cm)</label>
+                    <input id="height_cm" name="height_cm"
+                           type="number" min="1" max="300"
+                           step="0.1" placeholder="e.g. 170">
+                </div>
+
+                <div class="field">
+                    <label for="weight_kg">Weight (kg)</label>
+                    <input id="weight_kg" name="weight_kg"
+                           type="number" min="1" max="700"
+                           step="0.1" placeholder="e.g. 62">
+                </div>
+
+                <div class="field">
+                    <label for="bmi">BMI</label>
+                    <input id="bmi" type="text" readonly
+                           placeholder="Calculated automatically">
+                    <small>BMI is a screening measure, not a diagnosis.</small>
+                </div>
+
+                <div class="field">
+                    <label for="allergies">Known Allergies</label>
+                    <textarea id="allergies" name="allergies" rows="2"
+                              placeholder="List known allergies, or state unknown">{{ patient.get('allergies', '') }}</textarea>
+                </div>
+
+                <div class="field">
+                    <label for="chronic_conditions">Chronic Conditions</label>
+                    <textarea id="chronic_conditions"
+                              name="chronic_conditions" rows="2"
+                              placeholder="e.g. asthma, diabetes, or unknown">{{ patient.get('chronic_conditions', '') }}</textarea>
+                </div>
+
+                <div class="field field-full">
+                    <label for="current_medications">Current Medications</label>
+                    <textarea id="current_medications"
+                              name="current_medications" rows="2"
+                              placeholder="List current medicines, if known">{{ patient.get('current_medications', '') }}</textarea>
+                    <small>Verify medications against the patient's actual prescription records.</small>
+                </div>
+            </div>
+        </section>
+
+        <!-- EMERGENCY CONTACT -->
+        <section class="profile-card emergency-card">
+            <div class="section-heading">
+                <div class="section-icon emergency-icon">🚨</div>
+                <div>
+                    <h2>Emergency Contact</h2>
+                    <p>Who should be contacted if you need urgent assistance?</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="field">
+                    <label for="emergency_contact_name">Contact Name</label>
+                    <input id="emergency_contact_name"
+                           name="emergency_contact_name" type="text"
+                           value="{{ patient.get('emergency_contact_name', '') }}">
+                </div>
+
+                <div class="field">
+                    <label for="emergency_relationship">Relationship</label>
+                    <select id="emergency_relationship"
+                            name="emergency_relationship">
+                        <option value="">Select relationship</option>
+                        {% for option in ['Parent', 'Spouse', 'Sibling', 'Child', 'Relative', 'Friend', 'Other'] %}
+                        <option value="{{ option }}"
+                            {% if patient.get('emergency_relationship', '') == option %}selected{% endif %}>
+                            {{ option }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="emergency_contact_phone">Contact Phone</label>
+                    <input id="emergency_contact_phone"
+                           name="emergency_contact_phone" type="tel"
+                           value="{{ patient.get('emergency_contact_phone', '') }}">
+                </div>
+
+                <div class="field">
+                    <label for="alternate_contact_phone">Alternate Contact (optional)</label>
+                    <input id="alternate_contact_phone"
+                           name="alternate_contact_phone" type="tel"
+                           value="{{ patient.get('alternate_contact_phone', '') }}">
+                </div>
+
+                <div class="field field-full">
+                    <label for="emergency_address">Emergency Address (if different)</label>
+                    <textarea id="emergency_address"
+                              name="emergency_address" rows="2">{{ patient.get('emergency_address', '') }}</textarea>
+                </div>
+
+                <div class="field field-full">
+                    <label for="emergency_notes">Additional Emergency Notes</label>
+                    <textarea id="emergency_notes" name="emergency_notes"
+                              rows="3"
+                              placeholder="Important information you want healthcare professionals to know">{{ patient.get('emergency_notes', '') }}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <div class="privacy-note">
+            <span aria-hidden="true">🔒</span>
+            <p>Keep your information accurate. Medical details should only be accessed by authorized users.</p>
+        </div>
+
+        <div class="form-actions">
+            <button type="reset" class="btn-secondary">Reset Changes</button>
+            <button type="submit" class="btn-primary">💾 Save Profile</button>
+        </div>
+    </form>
+</div>
+
+<script src="{{ url_for('static', filename='js/patient_profile.js') }}" defer></script>
+{% endblock %}

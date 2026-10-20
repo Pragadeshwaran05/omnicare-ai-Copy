@@ -1,0 +1,729 @@
+/* =====================================================
+   OMNICARE AI - PATIENT SIDEBAR
+   Teal / Green Healthcare Theme
+   Larger & More Readable Typography
+   ===================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #f4fbfb;
+    color: #102a43;
+    font-size: 17px;
+}
+
+
+/* =====================================================
+   SIDEBAR
+   ===================================================== */
+
+.patient-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+
+    width: 271px;
+    height: 100vh;
+
+    background: linear-gradient(
+        180deg,
+        #087f7b 0%,
+        #08736f 55%,
+        #056966 100%
+    );
+
+    color: white;
+
+    padding: 12px 18px 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    z-index: 1000;
+
+    box-shadow:
+        5px 0 25px rgba(0, 90, 85, 0.10);
+
+    overflow-y: auto;
+}
+
+
+/* =====================================================
+   LOGO
+   ===================================================== */
+
+.sidebar-logo {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 0 12px 16px;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+
+.logo-icon {
+    width: 44px;
+    height: 44px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: white;
+
+    color: #0a8f8b;
+
+    border-radius: 11px;
+
+    font-size: 29px;
+    font-weight: 700;
+
+    line-height: 1;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+
+.logo-text {
+    font-size: 23px;
+    font-weight: 700;
+
+    color: white;
+
+    letter-spacing: -0.4px;
+}
+
+
+.logo-text span {
+    color: #5ce1de;
+}
+
+
+/* =====================================================
+   SECTION TITLE
+   ===================================================== */
+
+.sidebar-section-title {
+    padding: 30px 18px 10px;
+
+    color: rgba(255, 255, 255, 0.75);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.8px;
+}
+
+
+/* =====================================================
+   NAVIGATION
+   ===================================================== */
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+
+    gap: 14px;
+
+    width: 100%;
+
+    min-height: 57px;
+
+    padding: 11px 15px;
+
+    border-radius: 11px;
+
+    color: rgba(255, 255, 255, 0.96);
+
+    text-decoration: none;
+
+    font-size: 17px;
+
+    font-weight: 600;
+
+    line-height: 1.4;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease,
+        color 0.2s ease;
+}
+
+
+.sidebar-link:hover {
+    background: rgba(255, 255, 255, 0.12);
+
+    color: white;
+
+    transform: translateX(2px);
+}
+
+
+/* =====================================================
+   ACTIVE LINK
+   ===================================================== */
+
+.sidebar-link.active {
+    background: linear-gradient(
+        90deg,
+        rgba(57, 206, 201, 0.95),
+        rgba(29, 180, 176, 0.92)
+    );
+
+    color: white;
+
+    box-shadow:
+        0 7px 18px rgba(0, 70, 67, 0.20);
+}
+
+
+.sidebar-link.active:hover {
+    transform: none;
+
+    background: linear-gradient(
+        90deg,
+        #3acdc8,
+        #20b6b2
+    );
+}
+
+
+/* =====================================================
+   NAV ICON
+   ===================================================== */
+
+.nav-icon {
+    width: 30px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 21px;
+
+    flex-shrink: 0;
+}
+
+
+/* =====================================================
+   SIDEBAR BOTTOM
+   ===================================================== */
+
+.sidebar-bottom {
+    margin-top: auto;
+
+    padding-top: 18px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.18);
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+
+/* =====================================================
+   LOGOUT
+   ===================================================== */
+
+.sidebar-link.logout {
+    color: #ffd5d5;
+}
+
+
+.sidebar-link.logout:hover {
+    background: rgba(255, 80, 80, 0.12);
+
+    color: #ffffff;
+}
+
+
+/* =====================================================
+   MAIN CONTENT AREA
+   ===================================================== */
+
+.patient-main {
+    margin-left: 270px;
+
+    min-height: 100vh;
+
+    padding: 34px;
+
+    background:
+        radial-gradient(
+            circle at 20% 10%,
+            rgba(66, 207, 203, 0.08),
+            transparent 25%
+        ),
+        #f5fbfb;
+
+    font-size: 17px;
+}
+
+
+/* =====================================================
+   DASHBOARD HEADINGS
+   ===================================================== */
+
+.patient-main h1 {
+    font-size: 38px;
+
+    line-height: 1.2;
+
+    font-weight: 700;
+
+    color: #082f49;
+
+    margin: 15px 0 10px;
+}
+
+
+.patient-main h2 {
+    font-size: 23px;
+
+    line-height: 1.3;
+
+    font-weight: 700;
+
+    color: #082f49;
+}
+
+
+.patient-main p {
+    font-size: 17px;
+
+    line-height: 1.65;
+
+    color: #5d7fa3;
+}
+
+
+/* =====================================================
+   DASHBOARD BADGE
+   ===================================================== */
+
+.dashboard-badge {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.6px;
+}
+
+
+/* =====================================================
+   SECURITY BADGE
+   ===================================================== */
+
+.security-badge {
+    font-size: 16px;
+
+    font-weight: 600;
+}
+
+
+/* =====================================================
+   STAT CARDS
+   ===================================================== */
+
+.stat-card {
+    padding: 28px;
+}
+
+
+.stat-card .stat-title {
+    font-size: 17px;
+
+    font-weight: 500;
+
+    color: #6283a5;
+}
+
+
+.stat-card .stat-value {
+    font-size: 30px;
+
+    font-weight: 700;
+
+    color: #082f49;
+}
+
+
+/* =====================================================
+   CARD HEADINGS
+   ===================================================== */
+
+.card-title {
+    font-size: 23px;
+
+    font-weight: 700;
+
+    color: #082f49;
+}
+
+
+.card-subtitle {
+    font-size: 17px;
+
+    color: #6484a5;
+
+    line-height: 1.6;
+}
+
+
+/* =====================================================
+   RECENT HEALTH RECORDS
+   ===================================================== */
+
+.recent-records h2 {
+    font-size: 23px;
+
+    font-weight: 700;
+}
+
+
+.recent-records p {
+    font-size: 17px;
+
+    line-height: 1.65;
+}
+
+
+.recent-records .empty-title {
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: #082f49;
+}
+
+
+.recent-records .empty-text {
+    font-size: 17px;
+
+    line-height: 1.65;
+
+    color: #6a8aaa;
+}
+
+
+/* =====================================================
+   VIEW ALL / VIEW TIMELINE
+   ===================================================== */
+
+.view-link {
+    font-size: 17px;
+
+    font-weight: 700;
+
+    color: #079b9f;
+
+    text-decoration: none;
+}
+
+
+/* =====================================================
+   AI HEALTH ASSISTANT
+   ===================================================== */
+
+.ai-card {
+    padding: 30px;
+}
+
+
+.ai-card .ai-label {
+    font-size: 14px;
+
+    font-weight: 700;
+
+    letter-spacing: 0.5px;
+
+    color: #079b9f;
+}
+
+
+.ai-card h2 {
+    font-size: 24px;
+
+    font-weight: 700;
+
+    color: #082f49;
+}
+
+
+.ai-card p {
+    font-size: 17px;
+
+    line-height: 1.7;
+
+    color: #5f81a3;
+}
+
+
+/* =====================================================
+   AI QUESTIONS
+   ===================================================== */
+
+.ai-question {
+    font-size: 16px;
+
+    font-weight: 500;
+
+    line-height: 1.5;
+}
+
+
+/* =====================================================
+   BUTTONS
+   ===================================================== */
+
+.ai-button,
+.upload-button,
+.patient-main button,
+.patient-main a.button {
+    font-size: 17px;
+
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   HEALTH TIMELINE
+   ===================================================== */
+
+.health-timeline h2 {
+    font-size: 23px;
+
+    font-weight: 700;
+}
+
+
+.health-timeline p {
+    font-size: 17px;
+
+    line-height: 1.65;
+}
+
+
+/* =====================================================
+   MOBILE MENU BUTTON
+   ===================================================== */
+
+.mobile-menu-button {
+    display: none;
+
+    position: fixed;
+
+    top: 15px;
+    left: 15px;
+
+    width: 45px;
+    height: 45px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: #0a8f8b;
+
+    color: white;
+
+    font-size: 23px;
+
+    cursor: pointer;
+
+    z-index: 1100;
+
+    box-shadow:
+        0 5px 15px rgba(0, 80, 76, 0.20);
+}
+
+
+/* =====================================================
+   SCROLLBAR
+   ===================================================== */
+
+.patient-sidebar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.patient-sidebar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.patient-sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.25);
+
+    border-radius: 10px;
+}
+
+
+/* =====================================================
+   TABLET
+   ===================================================== */
+
+@media (max-width: 900px) {
+
+    .patient-sidebar {
+        width: 250px;
+    }
+
+
+    .patient-main {
+        margin-left: 250px;
+
+        padding: 28px;
+    }
+
+
+    .logo-text {
+        font-size: 21px;
+    }
+
+
+    .sidebar-link {
+        font-size: 16px;
+    }
+
+
+    .sidebar-section-title {
+        font-size: 13px;
+    }
+
+
+    .patient-main h1 {
+        font-size: 32px;
+    }
+
+
+    .patient-main p {
+        font-size: 16px;
+    }
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 700px) {
+
+    .patient-sidebar {
+        left: -296px;
+
+        width: 280px;
+
+        transition: left 0.3s ease;
+    }
+
+
+    .patient-sidebar.open {
+        left: 0;
+    }
+
+
+    .patient-main {
+        margin-left: 0;
+
+        padding: 75px 18px 30px;
+
+        font-size: 16px;
+    }
+
+
+    .mobile-menu-button {
+        display: flex;
+
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .sidebar-link {
+        font-size: 17px;
+    }
+
+
+    .patient-main h1 {
+        font-size: 29px;
+    }
+
+
+    .patient-main h2 {
+        font-size: 21px;
+    }
+
+
+    .patient-main p {
+        font-size: 16px;
+    }
+
+
+    .stat-card .stat-title {
+        font-size: 16px;
+    }
+
+
+    .stat-card .stat-value {
+        font-size: 27px;
+    }
+
+
+    .ai-card h2 {
+        font-size: 21px;
+    }
+
+
+    .ai-card p {
+        font-size: 16px;
+    }
+}
+/* =========================================
+   MOBILE SIDEBAR OVERLAY
+   ========================================= */
+
+.sidebar-overlay {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.35);
+
+    z-index: 998;
+}
+
+
+/* Overlay visible when sidebar is open */
+.sidebar-overlay.active {
+    display: block;
+}
+
+
+/* Sidebar must stay above overlay */
+.patient-sidebar {
+    z-index: 999;
+}
+.mobile-menu-btn.hidden {
+    display: none;
+}

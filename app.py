@@ -2,6 +2,7 @@ from services.doctor_ai_assistant import ask_doctor_ai
 from services.medical_document_processor import process_medical_document
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import secrets
 from datetime import datetime, timedelta, timezone
 from supabase import create_client, Client
@@ -2171,192 +2172,176 @@ def doctor_dashboard():
     )
 
 
-@app.route("/doctor/access")
-def doctor_access():
-    if "doctor_id" not in session:
-        return redirect(url_for("doctor_login"))
-    return render_template("doctor/guest_patient.html")
-
-
-@app.route(
-    "/doctor/guest-workspace/<uuid:guest_patient_id>/upload",
-    methods=["GET", "POST"]
-)
-def doctor_guest_upload_records(guest_patient_id):
-
-    if "doctor_id" not in session:
-        return redirect(url_for("doctor_login"))
-
-    guest_id = str(guest_patient_id)
-    doctor_id = session["doctor_id"]
-
-    # Verify this doctor has access to this guest.
+def _is_guest_patient(patient_id):
+    """
+    Check if a given ID belongs to a guest patient rather than a registered patient.
+    Guarantees strict patient isolation without executing improper cross-table queries.
+    """
+    if not patient_id:
+        return False
     try:
-        access = (
-            supabase_admin.table("guest_patient_access")
+        clean_id = str(uuid.UUID(str(patient_id)))
+        res = (
+            supabase_admin
+            .table("guest_patients")
             .select("id")
-            .eq("guest_patient_id", guest_id)
-            .eq("doctor_id", doctor_id)
-            .eq("status", "active")
+            .eq("id", clean_id)
             .limit(1)
             .execute()
         )
+        return bool(res.data)
+    except Exception:
+        return False
 
-        if not access.data:
-            flash("Guest patient access denied.", "error")
-            return redirect(url_for("doctor_guest_patient"))
 
-    except Exception as e:
-        print("GUEST ACCESS CHECK ERROR:", repr(e))
-        flash("Unable to verify guest access.", "error")
-        return redirect(url_for("doctor_guest_patient"))
+@app.route("/doctor/access")
+def doctor_access():
+    """Consolidated route redirecting to the canonical guest patient record page."""
+    if "doctor_id" not in session:
+        return redirect(url_for("doctor_login"))
+    return redirect(url_for("doctor_guest_patient"))
 
-    if request.method == "GET":
-        return render_template(
-            "doctor/guest_upload_records.html",
-            guest_patient_id=guest_id
-        )
 
-    record_type = request.form.get("record_type", "").strip()
-    title = request.form.get("title", "").strip()
-    description = request.form.get("description", "").strip()
-    uploaded_file = request.files.get("medical_file")
+@app.route("/doctor/guest-patient", methods=["GET"])
+def doctor_guest_patient():
+    """List all guest patients created by or authorized for the authenticated doctor."""
+    if "doctor_id" not in session:
+        return redirect(url_for("doctor_login"))
 
-    if not record_type or not title:
-        flash("Please enter the record type and title.", "error")
-        return redirect(
-            url_for(
-                "doctor_guest_upload_records",
-                guest_patient_id=guest_id
-            )
-        )
-
-    if not uploaded_file or not uploaded_file.filename:
-        flash("Please select a medical file.", "error")
-        return redirect(
-            url_for(
-                "doctor_guest_upload_records",
-                guest_patient_id=guest_id
-            )
-        )
-
-    original_filename = secure_filename(uploaded_file.filename)
-    allowed_extensions = {"pdf", "png", "jpg", "jpeg", "webp"}
-
-    if (
-        "." not in original_filename
-        or original_filename.rsplit(".", 1)[-1].lower()
-        not in allowed_extensions
-    ):
-        flash("Only PDF, PNG, JPG, JPEG and WEBP files are allowed.", "error")
-        return redirect(
-            url_for(
-                "doctor_guest_upload_records",
-                guest_patient_id=guest_id
-            )
-        )
-
-    extension = original_filename.rsplit(".", 1)[-1].lower()
-    unique_name = secrets.token_hex(16) + "." + extension
-
-    # Guest files never use a registered patient's patient_id.
-    storage_path = f"guests/{guest_id}/{unique_name}"
-
-    file_bytes = uploaded_file.read()
-    if not file_bytes:
-        flash("The selected file is empty.", "error")
-        return redirect(
-            url_for(
-                "doctor_guest_upload_records",
-                guest_patient_id=guest_id
-            )
-        )
-
-    content_type = (
-        uploaded_file.content_type or "application/octet-stream"
-    )
+    doctor_id = str(session["doctor_id"]).strip()
 
     try:
-        supabase_admin.storage.from_("medical-records").upload(
-            storage_path,
-            file_bytes,
-            {"content-type": content_type}
-        )
-
-        record_response = (
-            supabase_admin.table("guest_medical_records")
-            .insert({
-                "guest_patient_id": guest_id,
-                "uploaded_by_doctor_id": doctor_id,
-                "record_type": record_type,
-                "title": title,
-                "description": description,
-                "file_name": original_filename,
-                "file_path": storage_path,
-                "file_url": None
-            })
+        # Fetch all guest patients created by this doctor, latest first
+        response = (
+            supabase_admin
+            .table("guest_patients")
+            .select("*")
+            .eq("created_by_doctor_id", doctor_id)
+            .eq("status", "active")
+            .order("created_at", desc=True)
             .execute()
         )
 
-        if not record_response.data:
-            raise RuntimeError("Guest record metadata was not saved.")
+        guests = response.data or []
 
-        guest_record = record_response.data[0]
-
-        # Use the existing AI extraction service.
-        extracted = process_medical_document(
-            file_bytes,
-            original_filename,
-            content_type
-        )
-
-        # Do not guess the extraction schema. Inspect the actual output
-        # before mapping extracted fields into the guest timeline.
-        print("GUEST DOCUMENT EXTRACTION RESULT:", repr(extracted))
-
-        flash(
-            "Medical record uploaded. Check the Flask terminal for the "
-            "extraction result before enabling timeline mapping.",
-            "success"
-        )
-
-        return redirect(
-            url_for(
-                "doctor_guest_workspace",
-                guest_patient_id=guest_id
+        # Also include any guest patients shared with this doctor via guest_patient_access
+        try:
+            access_res = (
+                supabase_admin
+                .table("guest_patient_access")
+                .select("guest_patient_id")
+                .eq("doctor_id", doctor_id)
+                .eq("status", "active")
+                .execute()
             )
+            shared_ids = [
+                a["guest_patient_id"]
+                for a in (access_res.data or [])
+                if a.get("guest_patient_id")
+            ]
+            known_ids = {g["id"] for g in guests}
+            missing_ids = [sid for sid in shared_ids if sid not in known_ids]
+            if missing_ids:
+                shared_guests_res = (
+                    supabase_admin
+                    .table("guest_patients")
+                    .select("*")
+                    .in_("id", missing_ids)
+                    .eq("status", "active")
+                    .order("created_at", desc=True)
+                    .execute()
+                )
+                if shared_guests_res.data:
+                    guests.extend(shared_guests_res.data)
+        except Exception as shared_err:
+            print("Notice: shared guest access query non-critical error:", repr(shared_err))
+
+        print("GUEST LIST COUNT:", len(guests))
+
+        return render_template(
+            "doctor/guest_patient.html",
+            guests=guests
         )
 
     except Exception as e:
-        print("GUEST UPLOAD ERROR:", repr(e))
-        flash("Unable to upload or process the guest medical record.", "error")
-        return redirect(
-            url_for(
-                "doctor_guest_upload_records",
-                guest_patient_id=guest_id
-            )
+        import traceback
+        print("GUEST PATIENT LIST ERROR:", repr(e))
+        traceback.print_exc()
+
+        flash("Unable to load guest patients. Please try refreshing.", "error")
+        return render_template(
+            "doctor/guest_patient.html",
+            guests=[]
         )
 
 
 @app.route("/doctor/guest-patient/create", methods=["POST"])
 def create_guest_patient():
+    """Validate and create a persistent guest patient record isolated from registered patients."""
     if "doctor_id" not in session:
         return redirect(url_for("doctor_login"))
 
-    doctor_id = session["doctor_id"]
+    doctor_id = str(session["doctor_id"]).strip()
 
     full_name = request.form.get("full_name", "").strip()
-    date_of_birth = request.form.get("date_of_birth", "").strip() or None
-    gender = request.form.get("gender", "").strip() or None
+    date_of_birth_raw = request.form.get("date_of_birth", "").strip()
+    gender_raw = request.form.get("gender", "").strip()
 
     if not full_name:
         flash("Please enter the guest patient's name.", "error")
         return redirect(url_for("doctor_guest_patient"))
 
+    if len(full_name) > 150:
+        flash("Patient name is too long (maximum 150 characters).", "error")
+        return redirect(url_for("doctor_guest_patient"))
+
+    date_of_birth = None
+    if date_of_birth_raw:
+        try:
+            parsed_dob = datetime.strptime(date_of_birth_raw, "%Y-%m-%d").date()
+            if parsed_dob > datetime.now(timezone.utc).date():
+                flash("Date of birth cannot be in the future.", "error")
+                return redirect(url_for("doctor_guest_patient"))
+            date_of_birth = date_of_birth_raw
+        except ValueError:
+            flash("Invalid date of birth format. Please use YYYY-MM-DD.", "error")
+            return redirect(url_for("doctor_guest_patient"))
+
+    allowed_genders = {"Male", "Female", "Other"}
+    gender = gender_raw if gender_raw in allowed_genders else None
+
+    # Duplicate submission guard: check if a record with same name was created within the last 5 seconds
+    try:
+        recent_check = (
+            supabase_admin
+            .table("guest_patients")
+            .select("id, guest_code, created_at")
+            .eq("created_by_doctor_id", doctor_id)
+            .eq("full_name", full_name)
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if recent_check.data:
+            latest = recent_check.data[0]
+            if latest.get("created_at"):
+                raw_created = latest["created_at"].replace("Z", "+00:00")
+                try:
+                    import dateutil.parser
+                    created_dt = dateutil.parser.isoparse(raw_created)
+                except Exception:
+                    created_dt = datetime.fromisoformat(raw_created)
+                if (datetime.now(timezone.utc) - created_dt).total_seconds() < 5:
+                    print("Duplicate guest patient creation prevented:", latest.get("id"))
+                    return redirect(url_for("doctor_guest_workspace", guest_patient_id=latest["id"]))
+    except Exception as dup_err:
+        print("Duplicate check notice:", repr(dup_err))
+
     guest_id = str(uuid.uuid4())
     guest_code = "GUEST-" + secrets.token_hex(4).upper()
 
     try:
+        # Insert guest patient into isolated guest_patients table
         result = (
             supabase_admin
             .table("guest_patients")
@@ -2373,8 +2358,9 @@ def create_guest_patient():
         )
 
         if not result.data:
-            raise RuntimeError("Guest patient was not created.")
+            raise RuntimeError("Guest patient record was not saved.")
 
+        # Insert authorization into guest_patient_access table
         (
             supabase_admin
             .table("guest_patient_access")
@@ -2386,7 +2372,7 @@ def create_guest_patient():
             .execute()
         )
 
-        flash(f"Guest patient created: {guest_code}", "success")
+        flash(f"Guest patient created successfully: {guest_code}", "success")
 
         return redirect(
             url_for(
@@ -2396,51 +2382,1145 @@ def create_guest_patient():
         )
 
     except Exception as e:
+        import traceback
         print("CREATE GUEST PATIENT ERROR:", repr(e))
-        flash("Unable to create the guest patient.", "error")
+        traceback.print_exc()
+        flash("Unable to create the guest patient. Please check your input and try again.", "error")
         return redirect(url_for("doctor_guest_patient"))
 
 
+@app.route("/doctor/guest-workspace/<guest_patient_id>")
+def doctor_guest_workspace(guest_patient_id):
+    """
+    Open the unified patient workspace for an authorized guest patient,
+    populating records, timeline, medical conflicts, trend analysis, and AI assistant.
+    """
+    if "doctor_id" not in session:
+        flash("Please login as a doctor.", "error")
+        return redirect(url_for("doctor_login"))
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        flash("Invalid guest patient identifier.", "error")
+        return redirect(url_for("doctor_guest_patient"))
+
+    try:
+        # 1. Verify doctor authorization
+        access_response = (
+            supabase_admin
+            .table("guest_patient_access")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+
+        has_access = bool(access_response.data)
+
+        if not has_access:
+            creator_check = (
+                supabase_admin
+                .table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if creator_check.data:
+                has_access = True
+                try:
+                    supabase_admin.table("guest_patient_access").insert({
+                        "guest_patient_id": clean_guest_id,
+                        "doctor_id": doctor_id,
+                        "status": "active"
+                    }).execute()
+                except Exception:
+                    pass
+
+        if not has_access:
+            flash("You do not have active access to this guest patient's medical records.", "error")
+            return redirect(url_for("doctor_guest_patient"))
+
+        # 2. Get Guest Patient Record
+        guest_response = (
+            supabase_admin
+            .table("guest_patients")
+            .select("*")
+            .eq("id", clean_guest_id)
+            .single()
+            .execute()
+        )
+
+        guest_patient = guest_response.data
+        if not guest_patient:
+            flash("Guest patient not found.", "error")
+            return redirect(url_for("doctor_guest_patient"))
+
+        patient = dict(guest_patient)
+        patient["is_guest"] = True
+        patient["health_id"] = guest_patient.get("guest_code") or "GUEST-PATIENT"
+        patient["name"] = guest_patient.get("full_name") or "Guest Patient"
+
+        # 3. Get Guest Medical Records
+        records_response = (
+            supabase_admin
+            .table("guest_medical_records")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+
+        records = records_response.data or []
+
+        # Generate secure signed URLs for original documents
+        for record in records:
+            record["uploaded_at"] = record.get("created_at")
+            file_path = record.get("file_path")
+            if file_path:
+                clean_path = file_path
+                bucket_name = "medical-records"
+                if clean_path.startswith(bucket_name + "/"):
+                    clean_path = clean_path[len(bucket_name) + 1:]
+                try:
+                    signed_res = supabase_admin.storage.from_(bucket_name).create_signed_url(clean_path, 3600)
+                    signed_url = None
+                    if isinstance(signed_res, dict):
+                        signed_url = signed_res.get("signedURL") or signed_res.get("signedUrl") or signed_res.get("signed_url")
+                    elif hasattr(signed_res, "data") and isinstance(signed_res.data, dict):
+                        signed_url = signed_res.data.get("signedUrl") or signed_res.data.get("signedURL")
+                    record["file_url"] = signed_url
+                except Exception as url_err:
+                    print("Guest record signed URL error:", repr(url_err))
+                    record["file_url"] = None
+
+        # 4. Get Guest Health Timeline Events
+        timeline_response = (
+            supabase_admin
+            .table("guest_health_timeline_events")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+
+        timeline_events = timeline_response.data or []
+        for event in timeline_events:
+            event["medical_record_id"] = event.get("guest_medical_record_id")
+            event["patient_id"] = clean_guest_id
+
+        # Map processing status to records
+        record_status_map = {}
+        for event in timeline_events:
+            rec_id = event.get("guest_medical_record_id")
+            if rec_id:
+                if event.get("ai_processed"):
+                    record_status_map[rec_id] = "processed"
+                elif rec_id not in record_status_map:
+                    record_status_map[rec_id] = "failed"
+
+        for record in records:
+            rec_id = record.get("id")
+            status = record_status_map.get(rec_id, "pending")
+            record["processing_status"] = status
+            record["ai_processed"] = (status == "processed")
+
+        # 5. Detect Medical Conflicts across guest timeline events
+        conflicts = detect_medical_conflicts(timeline_events)
+
+        conflict_summary = {
+            "total": len(conflicts),
+            "high": sum(1 for c in conflicts if c.get("severity") == "high"),
+            "medium": sum(1 for c in conflicts if c.get("severity") == "medium"),
+            "low": sum(1 for c in conflicts if c.get("severity") == "low")
+        }
+
+        # 6. Compute Health Trend Analysis Data
+        trend_data = get_trend_analysis_data(
+            timeline_events=timeline_events,
+            medical_records=records,
+            patient_name=patient["name"]
+        )
+
+        # 7. Workspace Access Context
+        access = {
+            "access_type": "guest",
+            "status": "active",
+            "approved_at": guest_patient.get("created_at"),
+            "expires_at": None
+        }
+
+        print("=" * 70)
+        print("DOCTOR GUEST PATIENT WORKSPACE")
+        print("=" * 70)
+        print("Guest Patient ID:", clean_guest_id)
+        print("Guest Code:", guest_patient.get("guest_code"))
+        print("Doctor ID:", doctor_id)
+        print("Medical Records:", len(records))
+        print("Timeline Events:", len(timeline_events))
+        print("Medical Conflicts:", len(conflicts))
+        print("=" * 70)
+
+        return render_template(
+            "doctor/patient_workspace.html",
+            patient=patient,
+            records=records,
+            timeline_events=timeline_events,
+            conflicts=conflicts,
+            conflict_summary=conflict_summary,
+            access=access,
+            trend_data=trend_data,
+            is_guest=True
+        )
+
+    except Exception as e:
+        import traceback
+        print("DOCTOR GUEST WORKSPACE ERROR:", repr(e))
+        traceback.print_exc()
+        flash("Unable to open the guest patient workspace.", "error")
+        return redirect(url_for("doctor_guest_patient"))
 
 
-@app.route("/doctor/guest-patient")
-def doctor_guest_patient():
+@app.route(
+    "/doctor/guest-workspace/<guest_patient_id>/upload",
+    methods=["GET", "POST"]
+)
+def doctor_guest_upload_records(guest_patient_id):
+    """
+    Handle medical document uploads for a guest patient.
+    Stores the document under guests/{guest_patient_id}/..., saves record metadata,
+    executes existing AI medical document extraction, and persists the extracted findings
+    into the guest timeline.
+    """
     if "doctor_id" not in session:
         return redirect(url_for("doctor_login"))
 
     doctor_id = str(session["doctor_id"]).strip()
 
     try:
-        response = (
-            supabase_admin
-            .table("guest_patients")
-            .select("*")
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        flash("Invalid guest patient identifier.", "error")
+        return redirect(url_for("doctor_guest_patient"))
+
+    # Verify authorization
+    access = (
+        supabase_admin.table("guest_patient_access")
+        .select("id")
+        .eq("guest_patient_id", clean_guest_id)
+        .eq("doctor_id", doctor_id)
+        .eq("status", "active")
+        .limit(1)
+        .execute()
+    )
+
+    if not access.data:
+        creator_check = (
+            supabase_admin.table("guest_patients")
+            .select("id")
+            .eq("id", clean_guest_id)
             .eq("created_by_doctor_id", doctor_id)
+            .limit(1)
+            .execute()
+        )
+        if not creator_check.data:
+            flash("Guest patient access denied.", "error")
+            return redirect(url_for("doctor_guest_patient"))
+
+    if request.method == "GET":
+        guest_res = (
+            supabase_admin.table("guest_patients")
+            .select("*")
+            .eq("id", clean_guest_id)
+            .single()
+            .execute()
+        )
+        guest_patient = guest_res.data or {}
+        return render_template(
+            "doctor/guest_upload_records.html",
+            guest_patient=guest_patient,
+            guest_patient_id=clean_guest_id
+        )
+
+    # POST handling
+    record_type = request.form.get("record_type", "").strip()
+    title = request.form.get("title", "").strip()
+    description = request.form.get("description", "").strip()
+    uploaded_file = request.files.get("medical_file")
+
+    if not record_type or not title:
+        flash("Please enter the record type and title.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    if not uploaded_file or not uploaded_file.filename:
+        flash("Please select a medical file.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    raw_filename = uploaded_file.filename
+    original_filename = secure_filename(raw_filename) if "secure_filename" in globals() else raw_filename
+    if not original_filename:
+        original_filename = "medical_record"
+
+    allowed_extensions = {"pdf", "png", "jpg", "jpeg", "webp"}
+    if "." not in raw_filename or raw_filename.rsplit(".", 1)[-1].lower() not in allowed_extensions:
+        flash("Only PDF, PNG, JPG, JPEG and WEBP files are allowed.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    extension = raw_filename.rsplit(".", 1)[-1].lower()
+    unique_name = secrets.token_hex(16) + "." + extension
+    storage_path = f"guests/{clean_guest_id}/{unique_name}"
+
+    file_bytes = uploaded_file.read()
+    if not file_bytes:
+        flash("The selected file is empty.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    # Max 10 MB limit
+    if len(file_bytes) > 10 * 1024 * 1024:
+        flash("File size exceeds maximum allowed limit of 10 MB.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    content_type = uploaded_file.content_type or "application/octet-stream"
+
+    try:
+        # 1. Upload to Supabase Storage under guest-isolated path
+        supabase_admin.storage.from_("medical-records").upload(
+            storage_path,
+            file_bytes,
+            {"content-type": content_type}
+        )
+
+        # 2. Insert record metadata into guest_medical_records
+        record_response = (
+            supabase_admin.table("guest_medical_records")
+            .insert({
+                "guest_patient_id": clean_guest_id,
+                "uploaded_by_doctor_id": doctor_id,
+                "record_type": record_type,
+                "title": title,
+                "description": description,
+                "file_name": raw_filename,
+                "file_path": storage_path,
+                "file_url": None
+            })
             .execute()
         )
 
-        guests = response.data or []
+        if not record_response.data:
+            try:
+                supabase_admin.storage.from_("medical-records").remove([storage_path])
+            except Exception:
+                pass
+            raise RuntimeError("Guest record metadata was not saved.")
 
-        print("GUEST LIST COUNT:", len(guests))
+        guest_record = record_response.data[0]
+        guest_record_id = guest_record.get("id")
 
-        return render_template(
-            "doctor/guest_patient.html",
-            guests=guests
+        # 3. Call existing medical document processing pipeline
+        ai_success = False
+        extracted = None
+        try:
+            print("=" * 70)
+            print("AI EXTRACTION FOR GUEST MEDICAL DOCUMENT")
+            print("=" * 70)
+            extracted = process_medical_document(
+                file_bytes=file_bytes,
+                filename=raw_filename,
+                content_type=content_type
+            )
+            print("GUEST DOCUMENT EXTRACTION RESULT:", repr(extracted))
+            if extracted and isinstance(extracted, dict):
+                ai_success = True
+        except Exception as ai_err:
+            print("GUEST DOCUMENT AI EXTRACTION ERROR:", repr(ai_err))
+            ai_success = False
+
+        # 4. Persist to guest_health_timeline_events
+        if ai_success and extracted:
+            timeline_data = {
+                "guest_patient_id": clean_guest_id,
+                "guest_medical_record_id": guest_record_id,
+                "event_date": extracted.get("event_date"),
+                "event_type": extracted.get("event_type", "other") or "other",
+                "provider_name": extracted.get("provider_name"),
+                "hospital_name": extracted.get("hospital_name"),
+                "diagnosis": extracted.get("diagnosis"),
+                "clinical_findings": extracted.get("clinical_findings"),
+                "investigations": extracted.get("investigations", []) or [],
+                "medications": extracted.get("medications", []) or [],
+                "follow_up": extracted.get("follow_up"),
+                "clinical_summary": extracted.get("clinical_summary"),
+                "ai_processed": True
+            }
+
+            timeline_res = (
+                supabase_admin
+                .table("guest_health_timeline_events")
+                .insert(timeline_data)
+                .execute()
+            )
+            print("GUEST TIMELINE EVENT PERSISTED:", bool(timeline_res.data))
+            flash("Medical record uploaded and analyzed successfully!", "success")
+        else:
+            # Fallback event: preserve original record, record an event with ai_processed=False
+            fallback_timeline = {
+                "guest_patient_id": clean_guest_id,
+                "guest_medical_record_id": guest_record_id,
+                "event_date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+                "event_type": "other",
+                "provider_name": None,
+                "hospital_name": None,
+                "diagnosis": None,
+                "clinical_findings": None,
+                "investigations": [],
+                "medications": [],
+                "follow_up": None,
+                "clinical_summary": f"Uploaded document: {raw_filename} ({record_type}). AI structured extraction pending.",
+                "ai_processed": False
+            }
+            try:
+                supabase_admin.table("guest_health_timeline_events").insert(fallback_timeline).execute()
+            except Exception as fb_err:
+                print("Fallback timeline insert error:", repr(fb_err))
+
+            flash("Medical record uploaded successfully, but AI extraction could not be completed at this time.", "warning")
+
+        return redirect(
+            url_for(
+                "doctor_guest_workspace",
+                guest_patient_id=clean_guest_id
+            )
         )
 
     except Exception as e:
         import traceback
-        print("GUEST PATIENT LIST ERROR:", repr(e))
+        print("GUEST UPLOAD ERROR:", repr(e))
         traceback.print_exc()
-
-        flash("Unable to load guest patients. Check Flask terminal.", "error")
-        return render_template(
-            "doctor/guest_patient.html",
-            guests=[]
+        flash("Unable to upload or process the guest medical record. Please try again.", "error")
+        return redirect(
+            url_for(
+                "doctor_guest_workspace",
+                guest_patient_id=clean_guest_id
+            )
         )
 
 
+@app.route("/doctor/guest-record/<guest_patient_id>/<record_id>")
+def doctor_view_guest_medical_record(guest_patient_id, record_id):
+    """Securely stream or redirect to signed URL for an authorized guest medical record."""
+    if "doctor_id" not in session:
+        flash("Please login as a doctor.", "error")
+        return redirect(url_for("doctor_login"))
 
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        flash("Invalid guest patient identifier.", "error")
+        return redirect(url_for("doctor_guest_patient"))
+
+    try:
+        # Check authorization
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                flash("You do not have authorization to view this guest record.", "error")
+                return redirect(url_for("doctor_guest_patient"))
+
+        # Fetch guest medical record
+        rec_res = (
+            supabase_admin.table("guest_medical_records")
+            .select("*")
+            .eq("id", record_id)
+            .eq("guest_patient_id", clean_guest_id)
+            .limit(1)
+            .execute()
+        )
+        if not rec_res.data:
+            flash("Medical record not found.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        record = rec_res.data[0]
+        file_path = record.get("file_path")
+        if not file_path:
+            flash("Original medical file path is not available.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        bucket_name = "medical-records"
+        if file_path.startswith(bucket_name + "/"):
+            file_path = file_path[len(bucket_name) + 1:]
+
+        signed_res = supabase_admin.storage.from_(bucket_name).create_signed_url(file_path, 300)
+        signed_url = None
+        if isinstance(signed_res, dict):
+            signed_url = signed_res.get("signedURL") or signed_res.get("signedUrl") or signed_res.get("signed_url")
+        elif hasattr(signed_res, "data") and isinstance(signed_res.data, dict):
+            signed_url = signed_res.data.get("signedUrl") or signed_res.data.get("signedURL")
+
+        if not signed_url:
+            flash("Could not generate a secure link to the medical record.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        return redirect(signed_url)
+
+    except Exception as e:
+        import traceback
+        print("DOCTOR VIEW GUEST RECORD ERROR:", repr(e))
+        traceback.print_exc()
+        flash("Unable to view the medical record.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+
+@app.route("/doctor/guest-record/<guest_patient_id>/status/<int:record_id>")
+def doctor_guest_record_status(guest_patient_id, record_id):
+    """
+    Check processing status of a specific guest medical record.
+    Returns JSON containing status ('processed', 'failed', 'pending') and extraction metadata.
+    """
+    if "doctor_id" not in session:
+        return {"success": False, "message": "Doctor login required."}, 401
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        return {"success": False, "message": "Invalid guest patient identifier."}, 400
+
+    try:
+        # Authorization check
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                return {"success": False, "message": "Access denied."}, 403
+
+        # Verify record exists
+        rec_res = (
+            supabase_admin.table("guest_medical_records")
+            .select("id, file_name, created_at, record_type")
+            .eq("id", record_id)
+            .eq("guest_patient_id", clean_guest_id)
+            .limit(1)
+            .execute()
+        )
+        if not rec_res.data:
+            return {"success": False, "message": "Record not found."}, 404
+
+        record = rec_res.data[0]
+
+        # Check corresponding timeline event
+        ev_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("id, ai_processed, event_date, diagnosis")
+            .eq("guest_medical_record_id", record_id)
+            .eq("guest_patient_id", clean_guest_id)
+            .order("created_at", desc=True)
+            .limit(1)
+            .execute()
+        )
+
+        if ev_res.data:
+            ev = ev_res.data[0]
+            is_processed = bool(ev.get("ai_processed"))
+            status = "processed" if is_processed else "failed"
+            return {
+                "success": True,
+                "record_id": record_id,
+                "status": status,
+                "ai_processed": is_processed,
+                "event_id": ev.get("id"),
+                "event_date": ev.get("event_date"),
+                "diagnosis": ev.get("diagnosis"),
+                "file_name": record.get("file_name"),
+                "record_type": record.get("record_type")
+            }
+        else:
+            return {
+                "success": True,
+                "record_id": record_id,
+                "status": "pending",
+                "ai_processed": False,
+                "file_name": record.get("file_name"),
+                "record_type": record.get("record_type")
+            }
+
+    except Exception as e:
+        import traceback
+        print("GUEST RECORD STATUS ERROR:", repr(e))
+        traceback.print_exc()
+        return {"success": False, "message": "Failed to check record status."}, 500
+
+
+@app.route(
+    "/doctor/guest-record/<guest_patient_id>/retry/<int:record_id>",
+    methods=["GET", "POST"]
+)
+def doctor_guest_retry_record(guest_patient_id, record_id):
+    """
+    Retry AI document extraction for a guest medical record.
+    Downloads the original document from Supabase storage, runs process_medical_document,
+    and updates/replaces the timeline event for this record to prevent duplicate entries.
+    """
+    if "doctor_id" not in session:
+        flash("Please login as a doctor.", "error")
+        return redirect(url_for("doctor_login"))
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        flash("Invalid guest patient identifier.", "error")
+        return redirect(url_for("doctor_guest_patient"))
+
+    try:
+        # Authorization check
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                flash("Access denied.", "error")
+                return redirect(url_for("doctor_guest_patient"))
+
+        # Fetch record
+        rec_res = (
+            supabase_admin.table("guest_medical_records")
+            .select("*")
+            .eq("id", record_id)
+            .eq("guest_patient_id", clean_guest_id)
+            .limit(1)
+            .execute()
+        )
+        if not rec_res.data:
+            flash("Medical record not found.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        record = rec_res.data[0]
+        file_path = record.get("file_path")
+        if not file_path:
+            flash("Original file path not found for this record.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        clean_path = file_path
+        bucket_name = "medical-records"
+        if clean_path.startswith(bucket_name + "/"):
+            clean_path = clean_path[len(bucket_name) + 1:]
+
+        # Download original file from Supabase Storage
+        file_bytes = supabase_admin.storage.from_(bucket_name).download(clean_path)
+        if not file_bytes:
+            flash("Unable to download original file from storage.", "error")
+            return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+        raw_filename = record.get("file_name") or "document.pdf"
+        extension = raw_filename.rsplit(".", 1)[-1].lower() if "." in raw_filename else "pdf"
+        mime_map = {
+            "pdf": "application/pdf",
+            "png": "image/png",
+            "jpg": "image/jpeg",
+            "jpeg": "image/jpeg",
+            "webp": "image/webp"
+        }
+        content_type = mime_map.get(extension, "application/pdf")
+
+        # Re-run medical document extraction
+        extracted = None
+        try:
+            print("=" * 70)
+            print("RETRYING AI EXTRACTION FOR GUEST RECORD:", record_id)
+            print("=" * 70)
+            extracted = process_medical_document(
+                file_bytes=file_bytes,
+                filename=raw_filename,
+                content_type=content_type
+            )
+        except Exception as retry_err:
+            print("RETRY EXTRACTION FAILED:", repr(retry_err))
+
+        if extracted and isinstance(extracted, dict):
+            # Check for existing timeline events for this specific record to prevent duplicate entries
+            existing_events = (
+                supabase_admin.table("guest_health_timeline_events")
+                .select("id")
+                .eq("guest_medical_record_id", record_id)
+                .eq("guest_patient_id", clean_guest_id)
+                .execute()
+            )
+
+            timeline_payload = {
+                "guest_patient_id": clean_guest_id,
+                "guest_medical_record_id": record_id,
+                "event_date": extracted.get("event_date"),
+                "event_type": extracted.get("event_type", "other") or "other",
+                "provider_name": extracted.get("provider_name"),
+                "hospital_name": extracted.get("hospital_name"),
+                "diagnosis": extracted.get("diagnosis"),
+                "clinical_findings": extracted.get("clinical_findings"),
+                "investigations": extracted.get("investigations", []) or [],
+                "medications": extracted.get("medications", []) or [],
+                "follow_up": extracted.get("follow_up"),
+                "clinical_summary": extracted.get("clinical_summary"),
+                "ai_processed": True
+            }
+
+            if existing_events.data:
+                first_id = existing_events.data[0]["id"]
+                supabase_admin.table("guest_health_timeline_events").update(timeline_payload).eq("id", first_id).execute()
+                # Remove any accidental duplicates that existed previously for this exact record
+                if len(existing_events.data) > 1:
+                    excess_ids = [e["id"] for e in existing_events.data[1:]]
+                    for eid in excess_ids:
+                        supabase_admin.table("guest_health_timeline_events").delete().eq("id", eid).execute()
+            else:
+                supabase_admin.table("guest_health_timeline_events").insert(timeline_payload).execute()
+
+            flash("Medical record reprocessed and analyzed successfully!", "success")
+        else:
+            flash("AI extraction could not be completed at this time. Original record is preserved.", "warning")
+
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+    except Exception as e:
+        import traceback
+        print("GUEST RETRY RECORD ERROR:", repr(e))
+        traceback.print_exc()
+        flash("Failed to reprocess medical record.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+
+@app.route("/doctor/guest-workspace/<guest_patient_id>/timeline")
+def doctor_guest_timeline(guest_patient_id):
+    """
+    Retrieve or view guest health timeline.
+    Returns JSON if requested via AJAX, or redirects to the workspace timeline tab.
+    """
+    if "doctor_id" not in session:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Doctor login required."}, 401
+        return redirect(url_for("doctor_login"))
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Invalid guest patient identifier."}, 400
+        return redirect(url_for("doctor_guest_patient"))
+
+    try:
+        # Authorization check
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+                    return {"success": False, "message": "Access denied."}, 403
+                flash("Access denied.", "error")
+                return redirect(url_for("doctor_guest_patient"))
+
+        # Fetch timeline events
+        timeline_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+        events = timeline_res.data or []
+        for ev in events:
+            ev["medical_record_id"] = ev.get("guest_medical_record_id")
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": True, "timeline_events": events, "count": len(events)}
+
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id, _anchor="health-timeline-tab"))
+
+    except Exception as e:
+        import traceback
+        print("GUEST TIMELINE ERROR:", repr(e))
+        traceback.print_exc()
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Failed to fetch timeline events."}, 500
+        flash("Failed to load timeline.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+
+@app.route("/doctor/guest-workspace/<guest_patient_id>/conflicts")
+def doctor_guest_conflicts(guest_patient_id):
+    """
+    Retrieve or view guest medical conflict alerts.
+    Returns JSON if requested via AJAX, or redirects to the workspace conflicts tab.
+    """
+    if "doctor_id" not in session:
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Doctor login required."}, 401
+        return redirect(url_for("doctor_login"))
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Invalid guest patient identifier."}, 400
+        return redirect(url_for("doctor_guest_patient"))
+
+    try:
+        # Authorization check
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+                    return {"success": False, "message": "Access denied."}, 403
+                flash("Access denied.", "error")
+                return redirect(url_for("doctor_guest_patient"))
+
+        # Fetch timeline events
+        timeline_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+        events = timeline_res.data or []
+        for ev in events:
+            ev["medical_record_id"] = ev.get("guest_medical_record_id")
+
+        conflicts = detect_medical_conflicts(events)
+        summary = {
+            "total": len(conflicts),
+            "high": sum(1 for c in conflicts if c.get("severity") == "high"),
+            "medium": sum(1 for c in conflicts if c.get("severity") == "medium"),
+            "low": sum(1 for c in conflicts if c.get("severity") == "low")
+        }
+
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": True, "conflicts": conflicts, "summary": summary}
+
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id, _anchor="medical-conflicts-tab"))
+
+    except Exception as e:
+        import traceback
+        print("GUEST CONFLICTS ERROR:", repr(e))
+        traceback.print_exc()
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest" or request.accept_mimetypes.accept_json:
+            return {"success": False, "message": "Failed to detect medical conflicts."}, 500
+        flash("Failed to load medical conflict alerts.", "error")
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=clean_guest_id))
+
+
+@app.route(
+    "/doctor/guest-workspace/<guest_patient_id>/ai-assistant",
+    methods=["POST"]
+)
+def doctor_guest_ai_assistant(guest_patient_id):
+    """Clinical AI assistant for guest patient record workspace."""
+    if "doctor_id" not in session:
+        return {"success": False, "message": "Doctor login required."}, 401
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        return {"success": False, "message": "Invalid guest patient identifier."}, 400
+
+    try:
+        # Check authorization
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                return {"success": False, "message": "You do not have active access to this guest patient."}, 403
+
+        # Fetch guest timeline events
+        timeline_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+        timeline_events = timeline_res.data or []
+        for ev in timeline_events:
+            ev["medical_record_id"] = ev.get("guest_medical_record_id")
+
+        data = request.get_json(silent=True) or {}
+        question = (data.get("question") or "").strip()
+        if not question:
+            return {"success": False, "message": "Please enter a question."}, 400
+
+        answer = ask_doctor_ai(question, timeline_events)
+        return {"success": True, "answer": answer}
+
+    except Exception as e:
+        import traceback
+        print("GUEST DOCTOR AI ERROR:", repr(e))
+        traceback.print_exc()
+        return {"success": False, "message": "AI assistant encountered an error. Please try again."}, 500
+
+
+@app.route(
+    "/doctor/guest-workspace/<guest_patient_id>/ai-sources",
+    methods=["GET"]
+)
+def doctor_guest_ai_sources(guest_patient_id):
+    """Retrieve source records cited by the AI assistant for guest patient."""
+    if "doctor_id" not in session:
+        return {"success": False, "message": "Doctor login required."}, 401
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        return {"success": False, "message": "Invalid guest identifier."}, 400
+
+    try:
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                return {"success": False, "message": "You do not have active access to this guest patient."}, 403
+
+        timeline_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("id, guest_medical_record_id, event_date, event_type, provider_name, hospital_name")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+        timeline_events = timeline_res.data or []
+
+        sources = []
+        seen = set()
+        for ev in timeline_events:
+            rec_id = ev.get("guest_medical_record_id")
+            if not rec_id or rec_id in seen:
+                continue
+            seen.add(rec_id)
+            view_url = url_for("doctor_view_guest_medical_record", guest_patient_id=clean_guest_id, record_id=rec_id)
+            sources.append({
+                "medical_record_id": rec_id,
+                "event_date": ev.get("event_date"),
+                "event_type": ev.get("event_type"),
+                "provider_name": ev.get("provider_name"),
+                "hospital_name": ev.get("hospital_name"),
+                "view_url": view_url
+            })
+        return {"success": True, "sources": sources}
+
+    except Exception as e:
+        import traceback
+        print("GUEST AI SOURCES ERROR:", repr(e))
+        traceback.print_exc()
+        return {"success": False, "message": "Failed to fetch source records."}, 500
+
+
+@app.route(
+    "/doctor/guest-workspace/<guest_patient_id>/trend-data",
+    methods=["POST"]
+)
+def doctor_guest_trend_data(guest_patient_id):
+    """Retrieve filtered health trend measurements and charts for a guest patient."""
+    if "doctor_id" not in session:
+        return {"success": False, "message": "Doctor login required."}, 401
+
+    doctor_id = str(session["doctor_id"]).strip()
+
+    try:
+        clean_guest_id = str(uuid.UUID(str(guest_patient_id)))
+    except (ValueError, AttributeError):
+        return {"success": False, "message": "Invalid guest identifier."}, 400
+
+    try:
+        access_check = (
+            supabase_admin.table("guest_patient_access")
+            .select("id")
+            .eq("guest_patient_id", clean_guest_id)
+            .eq("doctor_id", doctor_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+        if not access_check.data:
+            creator_check = (
+                supabase_admin.table("guest_patients")
+                .select("id")
+                .eq("id", clean_guest_id)
+                .eq("created_by_doctor_id", doctor_id)
+                .limit(1)
+                .execute()
+            )
+            if not creator_check.data:
+                return {"success": False, "message": "You do not have active access to this guest patient."}, 403
+
+        p_res = (
+            supabase_admin.table("guest_patients")
+            .select("full_name")
+            .eq("id", clean_guest_id)
+            .single()
+            .execute()
+        )
+        patient_name = (p_res.data or {}).get("full_name") or "Guest Patient"
+
+        records_res = (
+            supabase_admin.table("guest_medical_records")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("created_at", desc=True)
+            .execute()
+        )
+        records = records_res.data or []
+        for r in records:
+            r["uploaded_at"] = r.get("created_at")
+
+        timeline_res = (
+            supabase_admin.table("guest_health_timeline_events")
+            .select("*")
+            .eq("guest_patient_id", clean_guest_id)
+            .order("event_date", desc=True)
+            .execute()
+        )
+        timeline_events = timeline_res.data or []
+        for ev in timeline_events:
+            ev["medical_record_id"] = ev.get("guest_medical_record_id")
+
+        data = request.get_json(silent=True) or {}
+        selected_params = data.get("parameters")
+        time_period = data.get("time_period", "all")
+
+        trend_data = get_trend_analysis_data(
+            timeline_events=timeline_events,
+            medical_records=records,
+            selected_params=selected_params,
+            time_period=time_period,
+            patient_name=patient_name
+        )
+        return {"success": True, "trend_data": trend_data}
+
+    except Exception as e:
+        import traceback
+        print("GUEST TREND DATA ERROR:", repr(e))
+        traceback.print_exc()
+        return {"success": False, "message": "Failed to calculate trend data."}, 500
 
 
 @app.route("/doctor/medical-records")
@@ -3039,6 +4119,10 @@ def doctor_patient_workspace(patient_id):
             url_for("doctor_login")
         )
 
+    # Route guest patients to guest workspace
+    if _is_guest_patient(patient_id):
+        return redirect(url_for("doctor_guest_workspace", guest_patient_id=patient_id))
+
     doctor_id = session["doctor_id"]
 
     try:
@@ -3442,6 +4526,10 @@ def doctor_view_medical_record(patient_id, record_id):
         return redirect(
             url_for("doctor_login")
         )
+
+    # Route guest patients to guest record viewer
+    if _is_guest_patient(patient_id):
+        return redirect(url_for("doctor_view_guest_medical_record", guest_patient_id=patient_id, record_id=record_id))
 
     doctor_id = session["doctor_id"]
 
@@ -4051,6 +5139,9 @@ def doctor_patient_ai_assistant(patient_id):
         }, 401
 
 
+    if _is_guest_patient(patient_id):
+        return doctor_guest_ai_assistant(patient_id)
+
     doctor_id = session["doctor_id"]
 
 
@@ -4269,6 +5360,9 @@ def doctor_patient_ai_sources(patient_id):
             "success": False,
             "message": "Doctor login required."
         }, 401
+
+    if _is_guest_patient(patient_id):
+        return doctor_guest_ai_sources(patient_id)
 
     doctor_id = session["doctor_id"]
 
@@ -4595,6 +5689,9 @@ def doctor_patient_trend_data(patient_id):
             "success": False,
             "message": "Doctor login required."
         }, 401
+
+    if _is_guest_patient(patient_id):
+        return doctor_guest_trend_data(patient_id)
 
     doctor_id = session["doctor_id"]
 

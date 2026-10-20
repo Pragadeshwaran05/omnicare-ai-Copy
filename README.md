@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # OmniCare AI 🏥
 
 ### AI-Powered Unified Patient Medical Record Intelligence Platform

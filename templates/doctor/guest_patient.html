@@ -37,6 +37,7 @@
         </div>
 
         <form
+            id="createGuestForm"
             action="{{ url_for('create_guest_patient') }}"
             method="POST"
             class="guest-form"
@@ -74,7 +75,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="guest-primary-button">
+            <button type="submit" id="createGuestBtn" class="guest-primary-button">
                 Create Guest Patient
             </button>
         </form>
@@ -308,6 +309,11 @@
     color: #a12525;
 }
 
+.guest-message-warning {
+    background: #fffbeb;
+    color: #b45309;
+}
+
 @media (max-width: 760px) {
     .guest-card {
         padding: 17px;
@@ -327,4 +333,24 @@
     }
 }
 </style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("createGuestForm");
+    const btn = document.getElementById("createGuestBtn");
+
+    if (form && btn) {
+        form.addEventListener("submit", function (e) {
+            if (btn.disabled) {
+                e.preventDefault();
+                return false;
+            }
+            btn.disabled = true;
+            btn.innerHTML = `<span>⏳</span> <span>Creating Guest Patient...</span>`;
+            btn.style.opacity = "0.75";
+            btn.style.cursor = "not-allowed";
+        });
+    }
+});
+</script>
 {% endblock %}

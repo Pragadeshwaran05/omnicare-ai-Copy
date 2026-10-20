@@ -1,0 +1,338 @@
+{% extends "doctor_base.html" %}
+
+{% block title %}Upload Guest Medical Record - OmniCare AI{% endblock %}
+
+{% block content %}
+<div class="doctor-dashboard">
+
+    <div style="margin-bottom: 20px;">
+        <a href="{{ url_for('doctor_guest_workspace', guest_patient_id=guest_patient_id) }}"
+           class="back-to-workspace"
+           style="display: inline-flex; align-items: center; gap: 8px; color: #6841c6; text-decoration: none; font-weight: 600; font-size: 14px;">
+            ← Back to Guest Patient Workspace
+        </a>
+    </div>
+
+    <div class="dashboard-header">
+        <div>
+            <span class="dashboard-label">DOCTOR PORTAL — GUEST RECORD</span>
+            <h1>Upload Medical Document</h1>
+            <p>
+                Upload medical records, prescriptions, or laboratory reports for this guest patient.
+                The OmniCare AI medical document processor will extract clinical observations,
+                medications, investigations, and timeline events automatically.
+            </p>
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="guest-message guest-message-{{ category }}" style="margin-bottom: 20px;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="guest-card" style="max-width: 800px; margin: 0 auto 30px;">
+        <div class="guest-card-heading">
+            <div>
+                <h2>Document Details</h2>
+                <p>Supported file types: PDF, PNG, JPG, JPEG, WEBP (Max 10 MB)</p>
+            </div>
+            <span class="guest-icon">📄</span>
+        </div>
+
+        <form
+            id="guestUploadForm"
+            action="{{ url_for('doctor_guest_upload_records', guest_patient_id=guest_patient_id) }}"
+            method="POST"
+            enctype="multipart/form-data"
+            class="guest-upload-form"
+        >
+            <div class="upload-dropzone" id="uploadDropzone" onclick="document.getElementById('medical_file').click()">
+                <div style="font-size: 40px; margin-bottom: 10px;">☁️</div>
+                <h3 style="margin: 0 0 6px; font-size: 16px;">Choose a medical document or drag & drop</h3>
+                <p style="margin: 0; font-size: 13px; color: #6b7280;">PDF, PNG, JPG, JPEG or WEBP up to 10 MB</p>
+                <input
+                    type="file"
+                    id="medical_file"
+                    name="medical_file"
+                    accept=".pdf,.png,.jpg,.jpeg,.webp"
+                    style="display: none;"
+                    required
+                >
+                <div id="fileSelectionText" style="margin-top: 12px; font-weight: 600; color: #6841c6; font-size: 14px;">
+                    No file selected
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px;">
+                <div class="guest-field">
+                    <label for="title">Record Title *</label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        placeholder="e.g. Complete Blood Count (CBC) Report"
+                        maxlength="200"
+                        required
+                    >
+                </div>
+
+                <div class="guest-field">
+                    <label for="record_type">Record Type *</label>
+                    <select id="record_type" name="record_type" required>
+                        <option value="">Select Record Type</option>
+                        <option value="Prescription">Prescription</option>
+                        <option value="Lab Report">Lab Report</option>
+                        <option value="Diagnostic Report">Diagnostic Report</option>
+                        <option value="Scan / Imaging">Scan / Imaging</option>
+                        <option value="Discharge Summary">Discharge Summary</option>
+                        <option value="Medical Certificate">Medical Certificate</option>
+                        <option value="Other">Other Medical Document</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="guest-field" style="margin-top: 18px;">
+                <label for="description">Clinical Notes / Description (Optional)</label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="3"
+                    placeholder="Enter any additional clinical context or notes regarding this record..."
+                    style="box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid var(--border-color, #d1d5db); border-radius: 9px; font: inherit;"
+                ></textarea>
+            </div>
+
+            <div style="margin-top: 24px; display: flex; align-items: center; justify-content: flex-end; gap: 14px;">
+                <a
+                    href="{{ url_for('doctor_guest_workspace', guest_patient_id=guest_patient_id) }}"
+                    style="padding: 10px 18px; text-decoration: none; color: #4b5563; font-weight: 600; font-size: 14px;"
+                >
+                    Cancel
+                </a>
+                <button
+                    type="submit"
+                    id="uploadSubmitBtn"
+                    class="guest-primary-button"
+                    style="margin: 0; min-height: 44px; padding: 10px 24px;"
+                >
+                    <span>Upload &amp; Analyze with AI</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+<style>
+.upload-dropzone {
+    border: 2px dashed #c4b5fd;
+    background: #faf8ff;
+    border-radius: 14px;
+    padding: 34px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.upload-dropzone:hover, .upload-dropzone.dragover {
+    border-color: #6841c6;
+    background: #f3e8ff;
+}
+
+.guest-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(25, 25, 50, 0.04);
+}
+
+.guest-card-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 22px;
+}
+
+.guest-card-heading h2 {
+    margin: 0 0 7px;
+    font-size: 20px;
+}
+
+.guest-card-heading p {
+    margin: 0;
+    color: var(--text-secondary, #6b7280);
+    font-size: 14px;
+}
+
+.guest-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: #f0eaff;
+    color: #6841c6;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.guest-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.guest-field label {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.guest-field input, .guest-field select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 9px;
+    background: var(--input-bg, #fff);
+    color: inherit;
+    font: inherit;
+}
+
+.guest-field input:focus, .guest-field select:focus, textarea:focus {
+    outline: 2px solid #b9a4f5;
+    border-color: #7652d1;
+}
+
+.guest-primary-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 42px;
+    padding: 10px 17px;
+    border: none;
+    border-radius: 9px;
+    background: #6841c6;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.guest-primary-button:hover {
+    background: #5230a5;
+}
+
+.guest-message {
+    padding: 12px 15px;
+    border-radius: 9px;
+}
+
+.guest-message-success {
+    background: #e7f7ed;
+    color: #187342;
+}
+
+.guest-message-error {
+    background: #fff0f0;
+    color: #a12525;
+}
+
+.guest-message-warning {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+@media (max-width: 600px) {
+    .guest-upload-form > div {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const fileInput = document.getElementById("medical_file");
+    const dropzone = document.getElementById("uploadDropzone");
+    const fileText = document.getElementById("fileSelectionText");
+    const form = document.getElementById("guestUploadForm");
+    const submitBtn = document.getElementById("uploadSubmitBtn");
+
+    if (fileInput && fileText) {
+        fileInput.addEventListener("change", function () {
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                fileText.textContent = `✓ Selected: ${file.name} (${sizeMb} MB)`;
+                fileText.style.color = "#187342";
+            } else {
+                fileText.textContent = "No file selected";
+                fileText.style.color = "#6841c6";
+            }
+        });
+    }
+
+    if (dropzone) {
+        ["dragenter", "dragover"].forEach(eventName => {
+            dropzone.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.add("dragover");
+            }, false);
+        });
+
+        ["dragleave", "drop"].forEach(eventName => {
+            dropzone.addEventListener(eventName, function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.classList.remove("dragover");
+            }, false);
+        });
+
+        dropzone.addEventListener("drop", function (e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files && files.length > 0) {
+                fileInput.files = files;
+                const file = files[0];
+                const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                fileText.textContent = `✓ Selected: ${file.name} (${sizeMb} MB)`;
+                fileText.style.color = "#187342";
+            }
+        });
+    }
+
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            if (!fileInput.files || fileInput.files.length === 0) {
+                e.preventDefault();
+                alert("Please select a medical file to upload.");
+                return false;
+            }
+
+            const file = fileInput.files[0];
+            if (file.size > 10 * 1024 * 1024) {
+                e.preventDefault();
+                alert("The selected file exceeds the 10 MB limit.");
+                return false;
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = `<span>⏳</span> <span>Uploading &amp; Analyzing...</span>`;
+                submitBtn.style.opacity = "0.75";
+                submitBtn.style.cursor = "not-allowed";
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
